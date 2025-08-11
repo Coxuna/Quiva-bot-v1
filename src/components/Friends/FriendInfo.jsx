@@ -19,7 +19,7 @@ const FriendsInfo = () => {
     };
 
     const copyLink = () => {
-        const link = `t.me/tonmicsbot?start=${user?.referral_code}`; // Update with your actual referral link
+        const link = `t.me/quiva_bot?start=${user?.referral_code}`; // Update with your actual referral link
     
         // Create a temporary textarea element
         const textArea = document.createElement("textarea");
@@ -58,7 +58,7 @@ const FriendsInfo = () => {
                     <div className="text-white">
                         <span className="block">Your referral link</span>
                         <span className="block w-full">
-                            t.me/Tonmics...?start<br />
+                            t.me/quiva_bot...?start<br />
                             =REF
                         </span>
                     </div>
@@ -99,7 +99,7 @@ const FriendsInfo = () => {
                 
                 {/* Logo */}
                 <div className="mt-4 flex items-center justify-center">
-                    <img src="/public/assets/Tonmics.png" alt="Tonmics Logo" className="w-32" />
+                    <img src="/quiva-logo.png" alt="Tonmics Logo" className="w-32" />
                 </div>
             </div>
             

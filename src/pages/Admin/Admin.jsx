@@ -269,7 +269,7 @@ const Admin = () => {
                       >
                         <option value="t_keys">T-Keys</option>
                         <option value="gems">Gems</option>
-                        <option value="tms_points">TMS Points</option>
+                        <option value="q_points">Q Points</option>
                       </select>
                     </div>
                   </div>

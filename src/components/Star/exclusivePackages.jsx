@@ -91,7 +91,7 @@ const exclusivePackages = [
   },
   {
     id: 9,
-    title: "👑 Tonmics Legend",
+    title: "👑 Quiva Legend",
     description: <>🔓 Unlock <strong>10K Gems</strong></>,
     price: "100,000 ⭐",
     tonAmount: "287.000",

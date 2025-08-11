@@ -18,11 +18,11 @@ import { Routes, Route} from "react-router";
 function App() {
   return (
       <TonConnectUIProvider
-          manifestUrl="https://tonmics.netlify.app/tonconnect-manifest.json"
+          manifestUrl="https://game-quiva.netlify.app/tonconnect-manifest.json"
           uiPreferences={{ theme: THEME.DARK }}
          
           actionsConfiguration={{
-              twaReturnUrl: 'https://t.me/TonmicsApp_bot/Tonmics'
+              twaReturnUrl: 'https://t.me/Quiva_bot/Quiva'
              
           }}
       >

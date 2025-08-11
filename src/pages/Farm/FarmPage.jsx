@@ -656,7 +656,7 @@ const FarmPage = () => {
 
             {/* Game Logo */}
             <div className="flex flex-row items-center justify-center w-full text-center mb-8 relative z-10">
-              <img src="/assets/tonmicslogo2.png" alt="Game Logo" />
+              <img className='w-25 h-20 mt-4 ' src="/home-logo.png" alt="Game Logo" />
             </div>
 
             {/* Stats Box */}

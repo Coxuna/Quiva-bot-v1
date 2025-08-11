@@ -23,9 +23,9 @@ const SpinTheWheel = () => {
     { color: "black", text: "#fff", label: "1 Key 🔑", responseType: "1 Key" },
     { color: "white", text: "#000", label: "Try again", responseType: "Try again" },
     { color: "black", text: "#fff", label: "2 Keys 🔑", responseType: "2 Keys" },
-    { color: "white", text: "#000", label: "20 Tonmics", responseType: "20 Tonmics" },
+    { color: "white", text: "#000", label: "20 Q_points", responseType: "20 Q_points" },
     { color: "black", text: "#fff", label: "Try again", responseType: "Try again" },
-    { color: "white", text: "#000", label: "50 Tonmics", responseType: "50 Tonmics" },
+    { color: "white", text: "#000", label: "50 Q_points", responseType: "50 Q_points" },
   ];
 
   const tot = sectors.length;
@@ -208,10 +208,10 @@ const SpinTheWheel = () => {
       updateObj.gems = (user.gems || 0) + 5;
     } else if (finalSector.responseType === "2 Keys") {
       updateObj.t_keys = (user.t_keys || 0) + 2;
-    } else if (finalSector.responseType === "50 Tonmics") {
+    } else if (finalSector.responseType === "50 Q_points") {
       const tms_points = parseFloat(user.tms_points || 0) + parseFloat(50);
       updateObj.tms_points = tms_points.toFixed(2);
-    } else if (finalSector.responseType === "20 Tonmics") {
+    } else if (finalSector.responseType === "20 Q_points") {
       const tms_points = parseFloat(user.tms_points || 0) + parseFloat(20);
       updateObj.tms_points = tms_points.toFixed(2);
     } else if (finalSector.responseType === "1 Key") {
@@ -258,9 +258,9 @@ const SpinTheWheel = () => {
   return (
     <div className="relative w-full max-w-[400px] mx-auto flex justify-center items-center">
       <div className="bg-[#18325B] p-[20px] rounded-full relative">
-        {/* Tonmics SVG positioned inside the blue background */}
+        {/* Q_points SVG positioned inside the blue background */}
         <img 
-          src="/assets/tonmicss.svg" 
+          src="/assets/spinner-quiva.png" 
           className="absolute z-10 top-[-70px] left-1/2 transform -translate-x-1/2 w-[160px] h-[160px] object-contain" 
         />
         

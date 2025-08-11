@@ -16,7 +16,7 @@ const SpinInfo = () => {
     <div className="fixed inset-0 flex flex-col items-center justify-end bg-black/50 bottom-0">
       <div className="relative w-[90%] sm:w-[80%] max-w-md bg-white rounded-lg p-4 sm:p-6 -top-12 sm:-top-16">
         <div className="h-16 sm:h-24 mb-4 sm:mb-6 -top-8 sm:-top-10 absolute w-full -left-0 flex items-center justify-center">
-          <img src="/assets/Tonmics.png" alt="Tonmics Logo" className="w-24 sm:w-32" />
+          <img src="/quiva-logo.png" alt="Tonmics Logo" className="w-24 sm:w-32" />
         </div>
         <div className="text-center space-y-2 sm:space-y-4 text-primary pt-6 sm:pt-10">
           <h2 className="text-lg sm:text-xl font-bold">

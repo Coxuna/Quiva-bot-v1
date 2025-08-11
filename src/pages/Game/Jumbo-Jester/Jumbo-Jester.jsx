@@ -1169,12 +1169,14 @@ const initializeGame = async() => {
     // Play victory music when completing a level
     playSound('victory'); 
   } else {
-    setToastType("gameOver");
-    setToastMessage(`Time's up! You got ${correct}/${totalWords} completed words correct`);
+    
+   setToastType("continueOptions");
+setToastMessage(`Time's up! Choose to continue:`);
+setToastMessage2(`You got ${correct}/3 completed words correct`);
     setToastMessage2(`+${earnedPoints} TMS points (${newTotalPoints} total)`);
     setToastMessage3(`Highest Level: ${highestLevelRef.current} | Session Score: ${newSessionScore} | Best Score: ${highestScoreRef.current}`);
     playSound('fail'); 
-    // Reset session score on game over
+    // Reset session score on game over\
     console.log("Game over (time up), resetting session score for next game");
     // Reset will happen on restart
   }
@@ -1419,34 +1421,23 @@ const initializeGame = async() => {
     playSound('submit'); 
     
     // Show appropriate toast based on performance
-    if (completedWords === 0) {
-      // No words completed
-      setToastType("gameOver");
-      setToastMessage("No words were completed!");
-      setToastMessage2("Try to complete at least one word");
-      setToastMessage3(`Highest Level: ${highestLevelRef.current} | Session Score: ${newSessionScore} | Best Score: ${highestScoreRef.current}`);
-    } else if (allWordsCorrect) {
-      // All words completed and correct - perfect score!
-      setToastType("success");
-      setToastMessage(`Perfect! Level ${level} complete!`);
-      setToastMessage2(`+${earnedPoints} TMS points (${newTotalPoints} total)`);
-      setToastMessage3(`Highest Level: ${highestLevelRef.current} | Session Score: ${newSessionScore} | Best Score: ${highestScoreRef.current}`);
-      
-      // Schedule the next level after showing success message
-      setAutoLevelAdvanceScheduled(true);
-      playSound('success'); 
-       // Play victory music when completing a level
-       playSound('victory'); 
-  
- 
-    } else {
-      // Some correct, some incorrect
-      setToastType("gameOver");
-      setToastMessage(`Score: ${correct}/3 completed words correct`);
-      setToastMessage2(`+${earnedPoints} TMS points (${newTotalPoints} total)`);
-      setToastMessage3(`Highest Level: ${highestLevelRef.current} | Session Score: ${newSessionScore} | Best Score: ${highestScoreRef.current}`);
-      playSound('fail'); 
-    }
+   // Determine toast type and message
+if (allWordsCorrect) {
+  setToastType("success");
+  setToastMessage(`Perfect! Level ${level} complete!`);
+  setToastMessage2(`+${earnedPoints} TMS points (${newTotalPoints} total)`);
+  setToastMessage3(`Highest Level: ${highestLevelRef.current} | Session Score: ${newSessionScore} | Best Score: ${highestScoreRef.current}`);
+  setAutoLevelAdvanceScheduled(true);
+  playSound('success');
+  playSound('victory');
+} else {
+  // Show continue options instead of game over
+  setToastType("continueOptions");
+  setToastMessage("You didn’t complete the level. Choose to continue:");
+  setToastMessage2(`Score: ${correct}/${totalWords} completed words correct`);
+  setToastMessage3(`Highest Level: ${highestLevelRef.current} | Session Score: ${newSessionScore} | Best Score: ${highestScoreRef.current}`);
+  playSound('fail');
+}
     
     // If game ends, reset session score for next game
     if (!allWordsCorrect) {
@@ -2004,11 +1995,11 @@ const purchaseTrialViaModal = async () => {
         if (result.done) {
           // Ad was watched successfully
           // Add gems to user account
-          updateUser(user?.telegram_id, { gems: user?.gems + 7 })
+          updateUser(user?.telegram_id, { gems: user?.gems + 4 })
             .then(() => {
               // Show success message
               setToastType("gemsEarned")
-              setToastMessage("You earned 7 gems!")
+              setToastMessage("You earned 4 gems!")
               setToastMessage2("")
               setToastVisible(true)
               
@@ -2070,6 +2061,71 @@ const purchaseTrialViaModal = async () => {
       return "Shuffles Used"
     }
   }
+
+const watchAdToContinue = () => {
+  setToastVisible(false);
+
+  setToastType("adLoading");
+  setToastMessage("Loading advertisement...");
+  setToastVisible(true);
+
+  // Initialize ad count if not already initialized
+  if (!localStorage.getItem('adCount')) {
+    localStorage.setItem('adCount', 0);
+  }
+
+  const currentAdCount = parseInt(localStorage.getItem('adCount'), 10);
+
+  window.Adsgram?.init({ blockId: "int-9606" })?.show()
+    .then((result) => {
+      setToastVisible(false);
+      if (result.done) {
+        // Increment ad count
+        localStorage.setItem('adCount', currentAdCount + 1);
+
+        if (currentAdCount + 1 >= 3) {
+          // Reset ad count after 3 ads
+          localStorage.setItem('adCount', 0);
+          setTimer(30); // Reset timer
+          startTimer();
+        } else {
+          setToastType("info");
+          setToastMessage(`Watch ${3 - (currentAdCount + 1)} more ads to continue`);
+          setToastVisible(true);
+        }
+      } else {
+        setToastType("error");
+        setToastMessage("Ad not completed");
+        setToastVisible(true);
+      }
+    })
+    .catch(() => {
+      setToastVisible(false);
+      setToastType("error");
+      setToastMessage("Failed to load ad");
+      setToastVisible(true);
+    });
+};
+
+const deductPointsToContinue = async () => {
+  if (gems < 10) {
+    setToastType("noGems");
+    setToastMessage("Not enough gems!");
+    setToastMessage2("Watch ads to earn more gems");
+    setToastVisible(true);
+    return;
+  }
+
+  // Deduct 10 gems
+  const newGems = gems - 10;
+
+  await updateUser(user?.telegram_id, { gems: newGems });
+
+  setToastVisible(false);
+  setTimer(30); // Reset timer
+  startTimer();
+};
+
 // Close toast
 // Close toast
 const closeToast = () => {
@@ -2087,7 +2143,10 @@ const closeToast = () => {
   } else if (toastType === "gameOver" || toastType === "timeUp") {
       // User clicked X on "Play Again" toast - restart the game
       restartGame();
-  }  else if (toastType === "buyTrial") {
+  } else if (toastType === "continueOptions") {
+      // Trigger restartGame when continueOptions toast is closed
+      restartGame();
+  } else if (toastType === "buyTrial") {
     setToastVisible(false);
     
     // Reset everything to initial state
@@ -2129,7 +2188,7 @@ const closeToast = () => {
     
     // Set game as not started
     setGameStarted(false);
-  }else {
+  } else {
       // For other toast types, just close the toast
       setToastVisible(false);
 
@@ -2213,7 +2272,7 @@ const cycleThroughMusic = () => {
       {/* TMS Points */}
       <div className="bg-white p-1 px-2 rounded-lg shadow-md flex items-center justify-center">
         <span className="font-bold text-gray-800 text-xs sm:text-sm">{tmsPoints}</span>
-        <span className="text-blue-500 text-xs sm:text-sm ml-1">TMS</span>
+        <span className="text-blue-500 text-xs sm:text-sm ml-1">Q_points</span>
       </div>
       
       {/* Gems */}
@@ -2465,6 +2524,30 @@ className={`w-full py-3 rounded-xl game font-bold text-lg shadow-lg transition-a
               {toastType === "gemsEarned" && <div className="text-6xl mb-4">💎</div>}
               {toastType === "buyHint" && <div className="text-6xl mb-4">💡</div>}
               {toastType === "buyShuffle" && <div className="text-6xl mb-4">🔄</div>}
+{toastType === "continueOptions" && (
+  <>
+    <button
+      onClick={watchAdToContinue}
+      className="py-2 px-4 bg-gradient-to-r mb-2 from-green-500 to-green-600 rounded-lg text-white font-bold shadow-lg hover:from-green-600 hover:to-green-700 transition-all text-sm"
+    >
+      Watch 3 Ads to Continue
+    </button>
+
+    <button
+      onClick={deductPointsToContinue}
+      className="py-2 px-4 mb-2 bg-gradient-to-r from-red-500 to-red-600 rounded-lg text-white font-bold shadow-lg hover:from-red-600 hover:to-red-700 transition-all text-sm"
+    >
+      Use 10 Gems to Continue
+    </button>
+
+    <button
+      onClick={restartGame}
+      className="py-2 px-4  mb-2 bg-gradient-to-r from-gray-500 to-gray-600 rounded-lg text-white font-bold shadow-lg hover:from-gray-600 hover:to-gray-700 transition-all text-sm"
+    >
+      Restart Game
+    </button>
+  </>
+)}
 
               <h2 className="text-xl font-bold text-white text-center mb-2">{toastMessage}</h2>
               <p className="text-blue-200 text-center text-sm">{toastMessage2}</p>

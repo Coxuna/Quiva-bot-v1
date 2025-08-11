@@ -4,7 +4,7 @@ const megaPackages = [
   {
     id: 1,
     title: "🌟 Rising Panel",
-    description: <>🔓 Unlock <strong>400 $TMS Points + 10 Golden Keys</strong></>,
+    description: <>🔓 Unlock <strong>400 $Q Points + 10 Golden Keys</strong></>,
     price: "50 ⭐ (0.1434 TON)",
     tonAmount: "0.1434",
     gems: 0,
@@ -30,7 +30,7 @@ const megaPackages = [
       <>
         🎮 Play <strong>Scrabble with your best friends</strong>
         <br />
-        🏆 <strong>+100 $TMS Points + 10 Gems &amp; 35 Keys</strong>
+        🏆 <strong>+100 $Q Points + 10 Gems &amp; 35 Keys</strong>
       </>
     ),
     price: "300 ⭐ (0.8604 TON)",
@@ -43,7 +43,7 @@ const megaPackages = [
   {
     id: 4,
     title: "🏅 Legends League",
-    description: <>🎁 Unlock <strong>3500 $TMS Points + 50 Golden Keys</strong></>,
+    description: <>🎁 Unlock <strong>3500 $Q Points + 50 Golden Keys</strong></>,
     price: "800 ⭐ (2.2944 TON)",
     tonAmount: "2.2944",
     gems: 50,

@@ -82,7 +82,7 @@ const HomePage = () => {
                 <section className="w-full h-screen bg-gradient-radial from-[#FAA31E] to-[#D72B29] flex flex-col justify-center items-center fixed z-50">
                     <img className="w-full h-full absolute -z-50 object-cover" src="/assets/firstbackground.webp" alt="Background" />
                     <div>
-                        <img src="/assets/logofrontpage.webp" alt="Logo" className="w-32 md:w-48 lg:w-56" />
+                        <img src="/home-logo.png" alt="Logo" className="w-32 md:w-48 lg:w-56" />
                     </div>
                     <div>
                         <span className="text-gray-900 text-xl md:text-3xl lg:text-5xl">Escape reality with us</span>
