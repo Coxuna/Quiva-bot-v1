@@ -1987,7 +1987,7 @@ const purchaseTrialViaModal = async () => {
     setToastVisible(true)
     
     // Initialize and show Adsgram ad
-    window.Adsgram?.init({ blockId: "int-9606" })?.show()
+    window.Adsgram?.init({ blockId: "int-13890" })?.show()
       .then((result) => {
         // Hide the loading toast
         setToastVisible(false)
@@ -2076,7 +2076,7 @@ const watchAdToContinue = () => {
 
   const currentAdCount = parseInt(localStorage.getItem('adCount'), 10);
 
-  window.Adsgram?.init({ blockId: "int-9606" })?.show()
+  window.Adsgram?.init({ blockId: "int-13890" })?.show()
     .then((result) => {
       setToastVisible(false);
       if (result.done) {

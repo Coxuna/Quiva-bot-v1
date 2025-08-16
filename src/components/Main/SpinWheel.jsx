@@ -232,7 +232,7 @@ const SpinTheWheel = () => {
   };
 
   const handleWatchAd = () => {
-    window.Adsgram?.init({ blockId: "int-9606" })?.show()
+    window.Adsgram?.init({ blockId: "int-13890" })?.show()
       .then((result) => {
         if (result.done) {
           // Give one more spin, max 15
