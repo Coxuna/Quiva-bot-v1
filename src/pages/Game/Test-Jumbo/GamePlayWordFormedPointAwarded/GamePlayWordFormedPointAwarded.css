@@ -12,12 +12,13 @@
   font-family: 'Adventure', sans-serif;
   position: relative;
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: auto; /* Allow scrolling if content is too tall */
   width: 100vw;
   min-width: 100vw;
   box-sizing: border-box;
   padding-top: 0;
   margin-top: 0;
+  padding-bottom: 20px; /* Ensure submit button has space at bottom */
 }
 
 /* Bottom panel occupies 60% of viewport height */
@@ -305,16 +306,17 @@
 /* Timer Section */
 .timer-section {
   background: transparent;
-  margin: 8px auto;
+  margin: 0 auto; /* Remove default margin - use Tailwind */
   border-radius: 16px;
-  padding: 12px;
+  padding: 0; /* Remove default padding - use Tailwind */
   position: relative;
-  overflow: hidden;
+  overflow: visible; /* Changed from hidden to visible to show button text */
   z-index: 5;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-height: fit-content; /* Ensure it fits all content */
 }
 
 .timer-section::before {
@@ -336,7 +338,7 @@
 .timer-wrapper {
   display: flex;
   justify-content: center;
-  margin-bottom: 8px;
+  margin: 0; /* Remove default margin - use Tailwind */
 }
 
 .timer-display {
@@ -363,13 +365,17 @@
 .action-buttons {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px; /* Small gap between hint and shuffle/ads row */
   position: relative;
   z-index: 2;
   align-items: flex-start;
   width: 100%;
   align-self: stretch;
   max-width: none;
+  overflow: visible; /* Ensure text below buttons is visible */
+  min-height: fit-content;
+  margin: 0; /* Remove default margin - use Tailwind */
+  padding: 0; /* Remove default padding - use Tailwind */
 }
 
 .action-buttons-row {
@@ -379,6 +385,8 @@
   align-items: flex-start;
   gap: 16px;
   position: relative;
+  overflow: visible; /* Ensure button text is not clipped */
+  min-height: fit-content;
 }
 
 .action-buttons-row .action-button:last-child {
@@ -390,7 +398,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px; /* Reduced gap */
+  min-height: 50px; /* Reduced height */
+  justify-content: flex-start;
+  overflow: visible;
+  padding-bottom: 0; /* Remove extra padding */
+  margin-bottom: 0; /* Remove margin */
 }
 
 .button-icon {
@@ -412,15 +425,22 @@
 
 .button-count, .button-text {
   color: white;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
+  display: block;
+  text-align: center;
+  white-space: nowrap;
+  min-height: 18px;
+  line-height: 1.2;
 }
 
 /* Letter Rack */
 .letter-rack {
   background: transparent;
-  margin: 8px auto;
-  padding: 12px;
+  margin: 0 auto; /* Remove default margin - use Tailwind */
+  padding: 8px; /* Keep horizontal padding */
+  padding-top: 0; /* Remove top padding - use Tailwind */
+  padding-bottom: 0; /* Remove bottom padding - use Tailwind */
   border-radius: 0;
   display: flex;
   gap: 6px;
@@ -428,7 +448,6 @@
   box-shadow: none;
   z-index: 5;
   position: relative;
-  margin-bottom: 8px;
   width: fit-content;
   max-width: 90%;
 }
@@ -469,14 +488,16 @@
 
 /* Play Button */
 .play-button-container {
-  padding: 8px;
+  padding: 8px; /* Keep horizontal padding */
+  padding-top: 0; /* Remove top padding - use Tailwind */
+  padding-bottom: 0; /* Remove bottom padding - use Tailwind */
   position: relative;
   z-index: 10;
   display: flex;
   justify-content: center;
   align-items: center;
   background: transparent;
-  margin: 8px auto;
+  margin: 0 auto; /* Remove default margin - use Tailwind */
   min-height: 60px;
   width: fit-content;
 }
@@ -559,17 +580,12 @@
     font-size: 16px;
   }
   
-  .timer-section {
-    margin: 6px 12px;
-    padding: 10px;
-  }
+  /* Timer section - spacing controlled by Tailwind */
   
-  .timer-wrapper {
-    margin-bottom: 6px;
-  }
+  /* Timer wrapper - spacing controlled by Tailwind */
   
   .action-buttons {
-    gap: 8px;
+    gap: 5px; /* Small gap between hint and shuffle/ads row */
   }
   
   .button-icon {
@@ -577,24 +593,12 @@
     height: 40px;
   }
   
-  .letter-rack {
-    margin: 6px auto;
-    padding: 10px;
-    gap: 6px;
-    margin-bottom: 6px;
-    width: fit-content;
-    max-width: 90%;
+  .button-count, .button-text {
+    font-size: 13px;
+    min-height: 16px;
   }
   
-  .play-button-container {
-    padding: 6px 12px;
-    margin: 6px auto;
-    min-height: 50px;
-  display: flex;
-    justify-content: center;
-  align-items: center;
-    max-width: 90%;
-  }
+  /* Timer section, letter rack, play button - spacing controlled by Tailwind */
   
   .action-buttons-row {
   justify-content: flex-start;
@@ -652,17 +656,8 @@
     font-size: 12px;
   }
   
-  .timer-section {
-    margin: 4px;
-    padding: 8px;
-  }
-  
-  .timer-wrapper {
-    margin-bottom: 4px;
-  }
-  
   .action-buttons {
-    gap: 6px;
+    gap: 2px; /* Reduced for minimal spacing */
   }
   
   .button-icon {
@@ -670,20 +665,16 @@
     height: 32px;
   }
   
-  .letter-rack {
-    margin: 4px auto;
-    padding: 8px;
-    gap: 4px;
-    margin-bottom: 4px;
+  .button-count, .button-text {
+    font-size: 11px;
+    min-height: 14px;
+    font-weight: 600;
   }
   
-  .play-button-container {
-    padding: 4px;
-    margin: 4px;
-    min-height: 50px;
-  display: flex;
-  justify-content: center;
-    align-items: center;
+  /* Timer section, letter rack, play button - spacing controlled by Tailwind */
+  
+  .action-buttons {
+    gap: 4px; /* Small gap for mobile */
   }
   
   .play-button {
@@ -739,9 +730,17 @@
     font-size: 10px;
   }
   
+  /* Timer section, letter rack, play button - spacing controlled by Tailwind */
+  
   .play-button img {
     width: 140px !important;
     height: 32px !important;
+  }
+  
+  .button-count, .button-text {
+    font-size: 10px;
+    min-height: 12px;
+    font-weight: 600;
   }
 
   /* Extra compact header for ultra small widths */
@@ -796,15 +795,7 @@
     font-size: 24px;
   }
   
-  .timer-section {
-    margin: 16px auto;
-    padding: 20px;
-    width: 100%;
-    max-width: 600px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  }
+  /* Spacing controlled by Tailwind */
   
   .action-buttons {
     align-items: flex-start;
@@ -820,19 +811,6 @@
   .action-buttons-row .action-button:last-child {
   position: absolute;
     right: 0;
-  }
-  
-  .letter-rack {
-    margin: 16px auto;
-    padding: 20px;
-    max-width: 600px;
-    gap: 12px;
-  }
-  
-  .play-button-container {
-    margin: 16px auto;
-    padding: 16px;
-    max-width: 600px;
   }
   
   .play-button img {
@@ -878,15 +856,7 @@
     font-size: 20px;
   }
   
-  .timer-section {
-    margin: 14px auto;
-    padding: 18px;
-    width: 100%;
-    max-width: 500px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  }
+  /* Spacing controlled by Tailwind */
   
   .action-buttons {
     align-items: flex-start;
@@ -902,19 +872,6 @@
   .action-buttons-row .action-button:last-child {
     position: absolute;
     right: 0;
-  }
-  
-  .letter-rack {
-    margin: 14px auto;
-    padding: 18px;
-    max-width: 500px;
-    gap: 10px;
-  }
-  
-  .play-button-container {
-    margin: 14px auto;
-    padding: 14px;
-    max-width: 500px;
   }
   
   .play-button img {
@@ -960,15 +917,7 @@
     font-size: 18px;
   }
   
-  .timer-section {
-    margin: 12px auto;
-    padding: 16px;
-    width: 100%;
-    max-width: 400px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  }
+  /* Spacing controlled by Tailwind */
   
   .action-buttons {
     align-items: flex-start;
@@ -984,19 +933,6 @@
   .action-buttons-row .action-button:last-child {
   position: absolute;
     right: 0;
-  }
-  
-  .letter-rack {
-    margin: 12px auto;
-    padding: 16px;
-    max-width: 400px;
-    gap: 8px;
-  }
-  
-  .play-button-container {
-    margin: 12px auto;
-    padding: 12px;
-    max-width: 400px;
   }
   
   .play-button img {
@@ -1050,22 +986,7 @@
     padding: 4px;
     margin: 0;
   }
-  .timer-section {
-    margin: 1rem 8px;
-    padding: 1rem;
-  }
-  .letter-rack {
-    margin: 12px auto;
-    padding: 1rem;
-    margin-bottom: 12px;
-  }
-  .play-button-container {
-    margin: 12px;
-    padding: 1rem;
-    position: sticky;
-    bottom: 12px;
-    z-index: 20;
-  }
+  /* Spacing controlled by Tailwind */
 }
 
 @media (min-height: 800px) {
@@ -1073,26 +994,14 @@
     padding-top: 0;
   }
   .topmost-white-container {
-    margin-bottom: 0.5rem;
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
+    margin-bottom: 0.25rem; /* Reduced */
+    padding-top: 0.375rem; /* Reduced */
+    padding-bottom: 0.375rem; /* Reduced */
   }
   .header {
-    padding: 0.5rem 0.75rem 0.25rem 0.75rem;
+    padding: 0.375rem 0.75rem 0.25rem 0.75rem;
   }
-  .timer-section {
-    margin: 0.75rem 8px;
-    padding: 0.875rem;
-  }
-  .letter-rack {
-    margin: 10px auto;
-    padding: 0.875rem;
-    margin-bottom: 10px;
-  }
-  .play-button-container {
-    margin: 10px;
-    padding: 0.875rem;
-  }
+  /* Spacing controlled by Tailwind */
 }
 
 @media (min-height: 700px) {
@@ -1100,26 +1009,14 @@
     padding-top: 0;
   }
   .topmost-white-container {
-    margin-bottom: 0.5rem;
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
+    margin-bottom: 0.25rem; /* Reduced */
+    padding-top: 0.25rem; /* Reduced */
+    padding-bottom: 0.25rem; /* Reduced */
   }
   .header {
-    padding: 0.5rem 0.75rem 0.25rem 0.75rem;
+    padding: 0.25rem 0.625rem 0.25rem 0.625rem;
   }
-  .timer-section {
-    margin: 0.5rem 8px;
-    padding: 0.75rem;
-  }
-  .letter-rack {
-    margin: 8px auto;
-    padding: 0.75rem;
-    margin-bottom: 8px;
-  }
-  .play-button-container {
-    margin: 8px;
-    padding: 0.75rem;
-  }
+  /* Spacing controlled by Tailwind */
 }
 
 @media (min-height: 701px) and (max-height: 750px) {
@@ -1134,19 +1031,7 @@
     height: 1.95rem;
     font-size: 1rem;
   }
-  .timer-section {
-    margin: 0.5rem 0.4rem;
-    padding: 0.65rem;
-  }
-  .letter-rack {
-    margin: 0.4rem auto;
-    padding: 0.65rem;
-    margin-bottom: 0.4rem;
-  }
-  .play-button-container {
-    margin: 0.4rem;
-    padding: 0.4rem;
-  }
+  /* Spacing controlled by Tailwind */
   .play-button img {
     width: 180px !important;
     height: 40px !important;
@@ -1173,19 +1058,7 @@
     height: 1.9rem;
     font-size: 0.95rem;
   }
-  .timer-section {
-    margin: 0.45rem 0.35rem;
-    padding: 0.6rem;
-  }
-  .letter-rack {
-    margin: 0.35rem auto;
-    padding: 0.6rem;
-    margin-bottom: 0.35rem;
-  }
-  .play-button-container {
-    margin: 0.35rem;
-    padding: 0.35rem;
-  }
+  /* Spacing controlled by Tailwind */
   .play-button img {
     width: 160px !important;
     height: 36px !important;
@@ -1212,19 +1085,7 @@
     height: 1.75rem;
     font-size: 0.875rem;
   }
-  .timer-section {
-    margin: 0.375rem 0.25rem;
-    padding: 0.5rem;
-  }
-  .letter-rack {
-    margin: 0.25rem auto;
-    padding: 0.5rem;
-    margin-bottom: 0.25rem;
-  }
-  .play-button-container {
-    margin: 0.25rem;
-    padding: 0.25rem;
-  }
+  /* Spacing controlled by Tailwind */
   .play-button img {
     width: 140px !important;
     height: 32px !important;
@@ -1243,19 +1104,7 @@
     height: 1.6rem;
     font-size: 0.8rem;
   }
-  .timer-section {
-    margin: 0.3rem 0.2rem;
-    padding: 0.4rem;
-  }
-  .letter-rack {
-    margin: 0.2rem auto;
-    padding: 0.4rem;
-    margin-bottom: 0.2rem;
-  }
-  .play-button-container {
-    margin: 0.2rem;
-    padding: 0.2rem;
-  }
+  /* Spacing controlled by Tailwind */
   .play-button img {
     width: 120px !important;
     height: 28px !important;
@@ -1274,22 +1123,290 @@
     height: 1.45rem;
     font-size: 0.76rem;
   }
-  .timer-section {
-    margin: 0.25rem 0.18rem;
-    padding: 0.3rem;
-  }
-  .letter-rack {
-    margin: 0.18rem auto;
-    padding: 0.3rem;
-    margin-bottom: 0.18rem;
-  }
-  .play-button-container {
-    margin: 0.18rem;
-    padding: 0.18rem;
-  }
+  /* Spacing controlled by Tailwind */
   .play-button img {
     width: 100px !important;
     height: 24px !important;
+  }
+}
+
+/* Specific height: 896px */
+@media (min-height: 850px) and (max-height: 920px) {
+  .board-content {
+    width: 200px; /* Significantly reduced */
+    max-height: 170px; /* Significantly reduced */
+    padding: 8px; /* Reduced */
+    gap: 5px; /* Reduced */
+  }
+  .letter-tile, .letter-slot {
+    width: 28px; /* Reduced */
+    height: 28px;
+    font-size: 12px;
+  }
+  .button-icon {
+    width: 30px; /* Reduced */
+    height: 30px;
+  }
+  .action-button {
+    min-height: 36px !important; /* Reduced */
+    gap: 0px !important;
+  }
+  .action-buttons {
+    gap: 4px !important; /* Small gap between hint and shuffle/ads */
+  }
+  .game-board {
+    padding: 2px; /* Minimal */
+    margin: 0px auto; /* Zero */
+  }
+  .topmost-white-container {
+    padding-top: 0.125rem; /* Minimal */
+    padding-bottom: 0.125rem;
+    margin-bottom: 0;
+  }
+  .close-button-section {
+    padding: 2px 8px 0px 8px;
+  }
+  .header {
+    padding: 0.0625rem 0.5rem 0.0625rem 0.5rem;
+  }
+  .currency-display {
+    padding: 2px 4px;
+    gap: 4px;
+  }
+  .currency-item {
+    gap: 0.0625rem;
+    padding: 0.0625rem 0.125rem;
+  }
+  .currency-item span {
+    font-size: 0.55rem;
+  }
+  .currency-item img {
+    width: 12px;
+    height: 12px;
+  }
+  .user-profile {
+    gap: 3px;
+  }
+  .user-profile span {
+    font-size: 0.5625rem;
+  }
+  .user-profile .shrink-0 {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .user-profile .shrink-0 img {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+/* Specific height: 844px */
+@media (min-height: 800px) and (max-height: 849px) {
+  .board-content {
+    width: 180px; /* Significantly reduced */
+    max-height: 150px; /* Significantly reduced */
+    padding: 6px; /* Significantly reduced */
+    gap: 4px; /* Significantly reduced */
+  }
+  .letter-tile, .letter-slot {
+    width: 26px; /* Significantly reduced */
+    height: 26px;
+    font-size: 11px;
+  }
+  .button-icon {
+    width: 28px; /* Significantly reduced */
+    height: 28px;
+  }
+  .action-button {
+    min-height: 35px !important; /* Further reduced */
+    gap: 0px !important;
+  }
+  .action-buttons {
+    gap: 4px !important; /* Small gap between hint and shuffle/ads */
+  }
+  .game-board {
+    padding: 2px; /* Minimal padding */
+    margin: 0px auto; /* Zero margin */
+  }
+  .topmost-white-container {
+    padding-top: 0.125rem; /* Minimal */
+    padding-bottom: 0.125rem; /* Minimal */
+    margin-bottom: 0; /* Zero */
+  }
+  .close-button-section {
+    padding: 2px 8px 0px 8px; /* Minimal */
+  }
+  .header {
+    padding: 0.0625rem 0.5rem 0.0625rem 0.5rem; /* Ultra-minimal */
+  }
+  .currency-display {
+    padding: 2px 4px; /* Further reduced */
+    gap: 4px; /* Reduced */
+  }
+  .currency-item {
+    gap: 0.0625rem;
+    padding: 0.0625rem 0.125rem;
+  }
+  .currency-item span {
+    font-size: 0.55rem; /* Smaller text */
+  }
+  .currency-item img {
+    width: 12px; /* Smaller icons */
+    height: 12px;
+  }
+  .user-profile {
+    gap: 3px;
+  }
+  .user-profile span {
+    font-size: 0.5625rem; /* Smaller */
+  }
+  .user-profile .shrink-0 {
+    width: 1.25rem; /* Smaller */
+    height: 1.25rem;
+  }
+  .user-profile .shrink-0 img {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+/* Specific height: 720px */
+@media (min-height: 700px) and (max-height: 750px) {
+  .board-content {
+    width: 170px; /* Significantly reduced */
+    max-height: 140px; /* Significantly reduced */
+    padding: 6px; /* Reduced */
+    gap: 4px; /* Reduced */
+  }
+  .letter-tile, .letter-slot {
+    width: 24px; /* Significantly reduced */
+    height: 24px;
+    font-size: 10px;
+  }
+  .button-icon {
+    width: 26px; /* Reduced */
+    height: 26px;
+  }
+  .action-button {
+    min-height: 32px !important; /* Further reduced */
+    gap: 0px !important;
+  }
+  .action-buttons {
+    gap: 3px !important; /* Small gap between hint and shuffle/ads */
+  }
+  .game-board {
+    padding: 2px; /* Minimal */
+    margin: 0px auto; /* Zero */
+  }
+  .topmost-white-container {
+    padding-top: 0.125rem; /* Minimal */
+    padding-bottom: 0.125rem;
+    margin-bottom: 0;
+  }
+  .close-button-section {
+    padding: 2px 6px 0px 6px; /* Minimal */
+  }
+  .header {
+    padding: 0.0625rem 0.375rem 0.0625rem 0.375rem; /* Ultra-minimal */
+  }
+  .currency-display {
+    padding: 1px 3px;
+    gap: 3px;
+  }
+  .currency-item {
+    gap: 0.0625rem;
+    padding: 0.0625rem 0.125rem;
+  }
+  .currency-item span {
+    font-size: 0.5rem;
+  }
+  .currency-item img {
+    width: 11px;
+    height: 11px;
+  }
+  .user-profile {
+    gap: 2px;
+  }
+  .user-profile span {
+    font-size: 0.5rem;
+  }
+  .user-profile .shrink-0 {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+  .user-profile .shrink-0 img {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+}
+
+/* Specific height: 667px */
+@media (min-height: 650px) and (max-height: 699px) {
+  .board-content {
+    width: 160px; /* Significantly reduced */
+    max-height: 130px; /* Significantly reduced */
+    padding: 5px; /* Reduced */
+    gap: 3px; /* Reduced */
+  }
+  .letter-tile, .letter-slot {
+    width: 22px; /* Significantly reduced */
+    height: 22px;
+    font-size: 9px;
+  }
+  .button-icon {
+    width: 24px; /* Reduced */
+    height: 24px;
+  }
+  .action-button {
+    min-height: 30px !important; /* Further reduced */
+    gap: 0px !important;
+  }
+  .action-buttons {
+    gap: 3px !important; /* Small gap between hint and shuffle/ads */
+  }
+  .header {
+    padding: 0.0625rem 0.375rem 0.0625rem 0.375rem; /* Minimal */
+  }
+  .currency-display {
+    padding: 1px 3px;
+    gap: 2px;
+  }
+  .currency-item {
+    gap: 0.0625rem;
+    padding: 0.0625rem 0.125rem;
+  }
+  .currency-item span {
+    font-size: 0.5rem; /* Smaller */
+  }
+  .currency-item img {
+    width: 10px; /* Smaller */
+    height: 10px;
+  }
+  .game-board {
+    padding: 2px; /* Minimal */
+    margin: 0px auto; /* Zero */
+  }
+  .topmost-white-container {
+    padding-top: 0.125rem; /* Minimal */
+    padding-bottom: 0.125rem;
+    margin-bottom: 0;
+  }
+  .close-button-section {
+    padding: 2px 6px 0px 6px; /* Minimal */
+  }
+  .user-profile {
+    gap: 2px;
+  }
+  .user-profile span {
+    font-size: 0.5rem;
+  }
+  .user-profile .shrink-0 {
+    width: 1rem;
+    height: 1rem;
+  }
+  .user-profile .shrink-0 img {
+    width: 1rem;
+    height: 1rem;
   }
 }
 
@@ -1305,19 +1422,7 @@
     height: 1.3rem;
     font-size: 0.73rem;
   }
-  .timer-section {
-    margin: 0.15rem 0.125rem;
-    padding: 0.15rem;
-  }
-  .letter-rack {
-    margin: 0.125rem auto;
-    padding: 0.15rem;
-    margin-bottom: 0.125rem;
-  }
-  .play-button-container {
-    margin: 0.125rem;
-    padding: 0.125rem;
-  }
+  /* Spacing controlled by Tailwind */
   .play-button img {
     width: 80px !important;
     height: 20px !important;
@@ -1330,20 +1435,7 @@
     max-width: 400px;
   }
   
-  .timer-section {
-    margin: 24px auto;
-    max-width: 500px;
-  }
-  
-  .letter-rack {
-    margin: 24px auto;
-    max-width: 400px;
-  }
-  
-  .play-button-container {
-    max-width: 400px;
-    margin: 0 auto;
-  }
+  /* Spacing controlled by Tailwind */
 }
 
 @media (min-width: 1024px) {
@@ -1375,19 +1467,7 @@
     padding: 12px;
   }
   
-  .timer-section {
-    margin: 8px;
-    padding: 16px;
-  }
-  
-  .letter-rack {
-    margin: 8px auto;
-    padding: 12px;
-  }
-  
-  .play-button-container {
-    padding: 8px;
-  }
+  /* Spacing controlled by Tailwind */
 }
 
 @media (min-width: 769px) and (max-width: 991px) {

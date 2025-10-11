@@ -10,7 +10,13 @@ const GameToastModal = ({
   message2 = "Keep playing to win more!", 
   showOutOfSpins = false,
   onClose, 
-  onWatchAd 
+  onWatchAd,
+  onWatchAdToContinue,
+  onDeductPointsToContinue,
+  onRestartGame,
+  onPurchaseHint,
+  onPurchaseShuffle,
+  onWatchAdForGems
 }) => {
   const closeModal = () => {
     onClose();
@@ -115,7 +121,49 @@ const GameToastModal = ({
         </div>
         
         <div className="flex justify-center mt-5">
-          {watchAds ? (
+          {toastType === 'continueOptions' ? (
+            <div className="flex flex-col gap-3 w-full max-w-xs">
+              <button 
+                onClick={onWatchAdToContinue}
+                className="bg-green-600 h-12 px-4 text-white font-bold shadow-[2px_10px_0px_0px_black] flex items-center justify-center gap-2 w-full hover:bg-green-700 transition-colors"
+              >
+                <span style={{ fontFamily: 'Adventure, sans-serif' }}>Watch 3 Ads to Continue</span>
+              </button>
+              <button 
+                onClick={onDeductPointsToContinue}
+                className="bg-purple-600 h-12 px-4 text-white font-bold shadow-[2px_10px_0px_0px_black] flex items-center justify-center gap-2 w-full hover:bg-purple-700 transition-colors"
+              >
+                <span style={{ fontFamily: 'Adventure, sans-serif' }}>Use 10 Gems to Continue</span>
+              </button>
+              <button 
+                onClick={onRestartGame}
+                className="bg-red-600 h-12 px-4 text-white font-bold shadow-[2px_10px_0px_0px_black] flex items-center justify-center gap-2 w-full hover:bg-red-700 transition-colors"
+              >
+                <span style={{ fontFamily: 'Adventure, sans-serif' }}>Restart Game</span>
+              </button>
+            </div>
+          ) : toastType === 'buyHint' ? (
+            <button 
+              onClick={onPurchaseHint}
+              className="bg-green-600 h-12 px-8 text-white font-bold shadow-[2px_10px_0px_0px_black] flex items-center justify-center gap-2 w-full max-w-xs mx-auto hover:bg-green-700 transition-colors"
+            >
+              <span style={{ fontFamily: 'Adventure, sans-serif' }}>Purchase (5💎)</span>
+            </button>
+          ) : toastType === 'buyShuffle' ? (
+            <button 
+              onClick={onPurchaseShuffle}
+              className="bg-blue-600 h-12 px-8 text-white font-bold shadow-[2px_10px_0px_0px_black] flex items-center justify-center gap-2 w-full max-w-xs mx-auto hover:bg-blue-700 transition-colors"
+            >
+              <span style={{ fontFamily: 'Adventure, sans-serif' }}>Purchase (3💎)</span>
+            </button>
+          ) : toastType === 'noGems' ? (
+            <button 
+              onClick={onWatchAdForGems}
+              className="bg-purple-600 h-12 px-8 text-white font-bold shadow-[2px_10px_0px_0px_black] flex items-center justify-center gap-2 w-full max-w-xs mx-auto hover:bg-purple-700 transition-colors"
+            >
+              <span style={{ fontFamily: 'Adventure, sans-serif' }}>Watch Ads to Get 10 Gems</span>
+            </button>
+          ) : watchAds ? (
             <button 
              onClick={watchAdFunction}
               className="bg-[#FAA31E] h-12 px-16 text-black font-bold shadow-[2px_10px_0px_0px_black] flex items-center justify-center gap-2 w-full max-w-xs mx-auto"

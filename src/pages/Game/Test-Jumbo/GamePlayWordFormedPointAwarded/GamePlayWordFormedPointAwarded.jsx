@@ -5,81 +5,86 @@ import { GameToastModal } from '../../../../components/Jumbo-Jester';
 import { useSoundManager } from '../../../../hooks/SoundManager';
 import { useTelegramWebApp } from '../../../../hooks/TelegramProvider';
 import { useUser } from '../../../../hooks/UserProvider';
-
+import { threeLetterWords, fourLetterWords,fiveLetterWords,sixLetterWords,sevenLetterWords } from '../../../../components/Jumbo-Jester/words';
 // Updated word fetching function that always uses fixed positions
 // Modified fetchRandomThreeLetterWords function to adjust grid sizes
-export const fetchRandomThreeLetterWords = async (level = 1) => {
+export const fetchRandomThreeLetterWords = async (level = 1, usedWordsSet = new Set()) => {
   try {
     // Define constraints
     const minSize = 3;
     const maxSize = 7;
-    const levelToReachMax = 10;
 
-    // Calculate grid sizes based on level
-    const progressFactor = Math.min((level - 1) / (levelToReachMax - 1), 1);
-    const sizeRange = maxSize - minSize;
-    let baseSize = minSize + Math.floor(progressFactor * sizeRange);
+    // Calculate grid sizes based on level with your specific progression
+    let row1Length, row2Length, row3Length;
 
-    let row1Length = baseSize;
-    let row2Length = baseSize;
-    let row3Length = baseSize;
+    // Level 1: 3-3-3
+    // Level 2: 3-4-3
+    // Level 3: 3-4-4
+    // Level 4: 4-4-4
+    // Level 5: 4-5-4
+    // Level 6: 4-5-5
+    // Level 7: 5-5-5
+    // Level 8: 5-6-5
+    // Level 9: 5-6-6
+    // Level 10: 6-6-6
+    // Continue pattern until reaching 7-7-7
 
-    // Add variation
-    if (level < levelToReachMax) {
-      const variation = level % 3;
-      if (variation === 1) {
-        row2Length = Math.min(row2Length + 1, maxSize);
-      } else if (variation === 2) {
-        row1Length = Math.min(row1Length + 1, maxSize);
-        row3Length = Math.min(row3Length + 1, maxSize);
-      }
-    } else if (level > levelToReachMax) {
-      const superLevelFactor = Math.floor((level - levelToReachMax) / 5) % 3;
-      if (superLevelFactor === 1) {
-        const variation = level % 2;
-        if (variation === 0) {
-          row1Length = maxSize - 1;
-          row3Length = maxSize - 1;
-        } else {
-          row2Length = maxSize - 1;
-        }
-      }
-    }
+    const progressionPattern = [
+      [3, 3, 3], // Level 1
+      [3, 4, 3], // Level 2
+      [3, 4, 4], // Level 3
+      [4, 4, 4], // Level 4
+      [4, 5, 4], // Level 5
+      [4, 5, 5], // Level 6
+      [5, 5, 5], // Level 7
+      [5, 6, 5], // Level 8
+      [5, 6, 6], // Level 9
+      [6, 6, 6], // Level 10
+      [6, 7, 6], // Level 11
+      [6, 7, 7], // Level 12
+      [7, 7, 7], // Level 13+
+    ];
 
-    // Clamp to bounds
-    row1Length = Math.min(Math.max(row1Length, minSize), maxSize);
-    row2Length = Math.min(Math.max(row2Length, minSize), maxSize);
-    row3Length = Math.min(Math.max(row3Length, minSize), maxSize);
+    // Get grid layout based on level
+    const patternIndex = Math.min(level - 1, progressionPattern.length - 1);
+    [row1Length, row2Length, row3Length] = progressionPattern[patternIndex];
 
     const totalCells = row1Length + row2Length + row3Length;
     console.log(`Grid layout: ${row1Length}-${row2Length}-${row3Length} (${totalCells} cells) for level ${level}`);
 
-    // Fetch words
-    const wordResponses = await Promise.all([
-      fetch(`https://api.datamuse.com/words?ml=game&sp=${"?".repeat(row1Length)}&max=20`),
-      fetch(`https://api.datamuse.com/words?ml=game&sp=${"?".repeat(row2Length)}&max=20`),
-      fetch(`https://api.datamuse.com/words?ml=game&sp=${"?".repeat(row3Length)}&max=20`)
-    ]);
+    // Get word arrays based on length
+    const getWordArrayByLength = (length) => {
+      switch (length) {
+        case 3: return threeLetterWords;
+        case 4: return fourLetterWords;
+        case 5: return fiveLetterWords;
+        case 6: return sixLetterWords;
+        case 7: return sevenLetterWords;
+        default: return threeLetterWords;
+      }
+    };
 
-    if (!wordResponses.every(response => response.ok)) {
-      throw new Error('Failed to fetch words');
-    }
+    // Function to get random word that hasn't been used
+    const getRandomUnusedWord = (length, usedSet) => {
+      const wordArray = getWordArrayByLength(length);
+      const availableWords = wordArray.filter(word => !usedSet.has(word.toUpperCase()));
+      
+      if (availableWords.length === 0) {
+        throw new Error(`No available words of length ${length}`);
+      }
+      
+      return availableWords[Math.floor(Math.random() * availableWords.length)].toUpperCase();
+    };
 
-    const wordData = await Promise.all(wordResponses.map(response => response.json()));
-
-    // Track used words
-    const usedWords = new Set();
-
-    const processedWords = wordData.map((data, index) => {
-      const rowLength = [row1Length, row2Length, row3Length][index];
-      return data
-        .map(item => item.word.toUpperCase())
-        .filter(word => word.length === rowLength);
-    });
-
-    if (processedWords.some(words => words.length < 1)) {
-      throw new Error("Not enough words found for at least one row");
-    }
+    // Get three unique words for the grid
+    const word1 = getRandomUnusedWord(row1Length, usedWordsSet);
+    usedWordsSet.add(word1);
+    
+    const word2 = getRandomUnusedWord(row2Length, usedWordsSet);
+    usedWordsSet.add(word2);
+    
+    const word3 = getRandomUnusedWord(row3Length, usedWordsSet);
+    usedWordsSet.add(word3);
 
     const fixedPositions = [
       Array.from({ length: row1Length }, (_, i) => i),
@@ -87,30 +92,13 @@ export const fetchRandomThreeLetterWords = async (level = 1) => {
       Array.from({ length: row3Length }, (_, i) => i + row1Length + row2Length)
     ];
 
-    const wordsWithPositions = processedWords.map((words, index) => {
-      const availableWords = words.filter(word => !usedWords.has(word));
-      if (availableWords.length === 0) {
-        throw new Error("No unique words available for one row");
-      }
-      const randomWord = availableWords[Math.floor(Math.random() * availableWords.length)];
-      usedWords.add(randomWord);
-      
-      return {
-        word: randomWord,
-        positions: fixedPositions[index]
-      };
-    });
+    const wordsWithPositions = [
+      { word: word1, positions: fixedPositions[0] },
+      { word: word2, positions: fixedPositions[1] },
+      { word: word3, positions: fixedPositions[2] }
+    ];
 
     console.log("Words with positions:", wordsWithPositions);
-
-    const allPositions = new Set();
-    wordsWithPositions.forEach(wordObj => {
-      wordObj.positions.forEach(pos => allPositions.add(pos));
-    });
-
-    if (allPositions.size !== totalCells) {
-      console.error(`Position mismatch: ${allPositions.size} positions mapped for ${totalCells} cells`);
-    }
 
     return {
       words: wordsWithPositions,
@@ -121,35 +109,15 @@ export const fetchRandomThreeLetterWords = async (level = 1) => {
   } catch (error) {
     console.error(error.message);
 
-    // Fallback layout
-    const minSize = 3;
-    const maxSize = 7;
-    const levelToReachMax = 10;
+    // Fallback with same progression pattern
+    const progressionPattern = [
+      [3, 3, 3], [3, 4, 3], [3, 4, 4], [4, 4, 4], [4, 5, 4], 
+      [4, 5, 5], [5, 5, 5], [5, 6, 5], [5, 6, 6], [6, 6, 6],
+      [6, 7, 6], [6, 7, 7], [7, 7, 7]
+    ];
 
-    const progressFactor = Math.min((level - 1) / (levelToReachMax - 1), 1);
-    const baseSize = Math.min(minSize + Math.floor(progressFactor * (maxSize - minSize)), maxSize);
-
-    let fallbackLayout = [baseSize, baseSize, baseSize];
-
-    if (level < levelToReachMax) {
-      if (level % 3 === 1) {
-        fallbackLayout[1] = Math.min(fallbackLayout[1] + 1, maxSize);
-      } else if (level % 3 === 2) {
-        fallbackLayout[0] = Math.min(fallbackLayout[0] + 1, maxSize);
-        fallbackLayout[2] = Math.min(fallbackLayout[2] + 1, maxSize);
-      }
-    } else if (level > levelToReachMax) {
-      const superLevelFactor = Math.floor((level - levelToReachMax) / 5) % 3;
-      if (superLevelFactor === 1) {
-        const variation = level % 2;
-        if (variation === 0) {
-          fallbackLayout[0] = maxSize - 1;
-          fallbackLayout[2] = maxSize - 1;
-        } else {
-          fallbackLayout[1] = maxSize - 1;
-        }
-      }
-    }
+    const patternIndex = Math.min(level - 1, progressionPattern.length - 1);
+    const fallbackLayout = progressionPattern[patternIndex];
 
     const totalCells = fallbackLayout.reduce((sum, size) => sum + size, 0);
 
@@ -159,23 +127,25 @@ export const fetchRandomThreeLetterWords = async (level = 1) => {
       Array.from({ length: fallbackLayout[2] }, (_, i) => i + fallbackLayout[0] + fallbackLayout[1])
     ];
 
+    // Simple fallback word collections
     const wordCollections = {
-      3: ["FUN", "TRY", "WIN", "TOP", "NEW", "BIG", "BOX", "CAT", "DOG", "EGG", "FOX", "GYM", "HAT", "ICE", "JAM"],
-      4: ["GAME", "PLAY", "WORD", "STEP", "MOVE", "TIME", "JUMP", "FAST", "CUBE", "DASH", "EASY", "GOLD", "HERO"],
-      5: ["LEVEL", "POWER", "SKILL", "BRAIN", "SMART", "QUICK", "HAPPY", "BLAST", "CHASE", "DREAM", "FRESH"],
-      6: ["PUZZLE", "TALENT", "WISDOM", "MASTER", "ACTION", "BOUNCE", "CLEVER", "DELIGHT", "ENERGY", "FUTURE"],
-      7: ["AMAZING", "SUCCESS", "VICTORY", "TRIUMPH", "BELIEVE", "CAPABLE", "DYNAMIC", "EARNING", "FORWARD"]
+      3: ["FUN", "TRY", "WIN", "TOP", "NEW", "BIG", "BOX", "CAT", "DOG", "EGG"],
+      4: ["GAME", "PLAY", "WORD", "STEP", "MOVE", "TIME", "JUMP", "FAST", "CUBE"],
+      5: ["LEVEL", "POWER", "SKILL", "BRAIN", "SMART", "QUICK", "HAPPY", "BLAST"],
+      6: ["PUZZLE", "TALENT", "WISDOM", "MASTER", "ACTION", "BOUNCE", "CLEVER"],
+      7: ["AMAZING", "SUCCESS", "VICTORY", "TRIUMPH", "BELIEVE", "CAPABLE"]
     };
-
-    const usedWords = new Set();
 
     const fallbackWords = [];
     for (let i = 0; i < 3; i++) {
       const wordLength = fallbackLayout[i];
       const wordCollection = wordCollections[wordLength];
-      const availableWords = wordCollection.filter(word => !usedWords.has(word));
-      const word = availableWords[Math.floor(Math.random() * availableWords.length)];
-      usedWords.add(word);
+      const availableWords = wordCollection.filter(word => !usedWordsSet.has(word));
+      const word = availableWords.length > 0 
+        ? availableWords[Math.floor(Math.random() * availableWords.length)]
+        : wordCollection[Math.floor(Math.random() * wordCollection.length)];
+      
+      usedWordsSet.add(word);
 
       fallbackWords.push({
         word: word,
@@ -192,6 +162,7 @@ export const fetchRandomThreeLetterWords = async (level = 1) => {
 };
 
 export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
+  const [usedWords, setUsedWords] = useState(new Set());
   const [selectedLetter, setSelectedLetter] = useState(null);
   const [selectedGridPos, setSelectedGridPos] = useState(null); // {row, col}
   // Use Jumbo-Jester grid system
@@ -210,6 +181,7 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
   // Timer
   const [timer, setTimer] = useState(0); // Start at 0, will be set when game starts
   const [timerInterval, setTimerInterval] = useState(null);
+  const timerIntervalRef = useRef(null); // Track actual interval ID
   const isSubmittingRef = useRef(false);
   const timerStartedRef = useRef(false);
   
@@ -238,7 +210,7 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
   const [selectedLetterIndex, setSelectedLetterIndex] = useState(null);
   const [selectedGridIndex, setSelectedGridIndex] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [preFilledPositions, setPreFilledPositions] = useState(new Set());
   // Get user data
   const { user } = useTelegramWebApp();
   const { updateUser } = useUser();
@@ -273,19 +245,30 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
   // Jumbo-Jester grid selection logic
   const selectGridPosition = (index) => {
     if (!gameStarted) return;
-
+  
+    // Prevent selecting pre-filled positions
+    if (preFilledPositions.has(index)) {
+      return; // Do nothing if this is a pre-filled position
+    }
+  
     // If the position contains a letter and no letter is currently selected from grid
     if (grid[index] !== "" && selectedGridIndex === null) {
       setSelectedGridIndex(index);
       return;
     }
-
+  
     // If we already have a letter selected from the grid
     if (selectedGridIndex !== null && grid[selectedGridIndex] !== "") {
+      // Prevent moving to or from pre-filled positions
+      if (preFilledPositions.has(selectedGridIndex) || preFilledPositions.has(index)) {
+        setSelectedGridIndex(null);
+        return;
+      }
+  
       // Swap positions within the grid
       const newGrid = [...grid];
       const temp = newGrid[selectedGridIndex];
-
+  
       // If target position is empty
       if (grid[index] === "") {
         newGrid[index] = temp;
@@ -296,12 +279,12 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
         newGrid[selectedGridIndex] = newGrid[index];
         newGrid[index] = temp;
       }
-
+  
       setGrid(newGrid);
       setSelectedGridIndex(null);
       return;
     }
-
+  
     // Handle normal case (empty grid position)
     if (grid[index] === "") {
       setSelectedGridIndex(index);
@@ -348,44 +331,75 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
 
   // Timer controls
   const startTimer = () => {
-    if (timerInterval) {
-      console.log('Timer already running, skipping start');
-      return;
+    // Always clear any existing interval first using ref
+    if (timerIntervalRef.current) {
+      console.log('Clearing existing timer before starting new one');
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
     }
-    console.log('Starting timer with value:', timer);
+    
+    console.log('Starting new timer');
+    
     const interval = setInterval(() => {
       setTimer((prev) => {
+        // Check if we're submitting
         if (isSubmittingRef.current) {
           console.log('Timer paused due to submission');
           return prev;
         }
+        
+        // Check if time is up
         if (prev <= 1) {
-          console.log('Timer reached 0, stopping');
-          clearInterval(interval);
+          console.log('Timer reached 0, calling handleTimeUp');
+          
+          // Clear the interval immediately
+          if (timerIntervalRef.current) {
+            clearInterval(timerIntervalRef.current);
+            timerIntervalRef.current = null;
+          }
           setTimerInterval(null);
-          handleTimeUp();
+          
+          // Call handleTimeUp if not already submitting
+          if (!isSubmittingRef.current) {
+            setTimeout(() => handleTimeUp(), 0);
+          }
           return 0;
         }
-        console.log('Timer countdown:', prev - 1);
+        
         return prev - 1;
       });
     }, 1000);
+    
+    // Store in both ref and state
+    timerIntervalRef.current = interval;
     setTimerInterval(interval);
   };
 
   const stopTimer = () => {
-    if (timerInterval) {
-      console.log('Stopping timer');
-      clearInterval(timerInterval);
-      setTimerInterval(null);
-    } else {
-      console.log('No timer to stop');
+    console.log('stopTimer called');
+    
+    // Clear using ref
+    if (timerIntervalRef.current) {
+      console.log('Clearing timer interval from ref');
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
     }
+    
+    // Always set state to null
+    setTimerInterval(null);
   };
 
   useEffect(() => {
     // Don't start timer on mount - only start when game begins
-    return () => stopTimer();
+    return () => {
+      // Cleanup on unmount - clear using ref to ensure it's cleared
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+      isSubmittingRef.current = false;
+      timerStartedRef.current = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -479,8 +493,12 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
   // Remove the checkWordFormation that shows modal on letter placement
 
   const handleHintClick = async () => {
-    if (!gameStarted || hints >= 3) {
-      showToast('noHints', 'WATCH ADS', 'Watch a video ad to get 1 hint and 2 shuffles.', 'WATCH', true);
+    if (!gameStarted) return;
+    
+    // Check if free hints are exhausted
+    if (hints >= 3) {
+      // Show purchase prompt
+      showToast('buyHint', 'All free hints used', 'Purchase a hint for 5 gems?', 'PURCHASE');
       return;
     }
 
@@ -513,6 +531,13 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
 
           setGrid(newGrid);
           setHints(hints + 1);
+          
+          // Update last hint time if this is the 3rd hint
+          if (hints + 1 >= 3) {
+            const now = new Date();
+            setLastHintTime(now.toISOString());
+          }
+          
           hintPlaced = true;
           showToast('hintUsed', 'Hint used!', 'A letter has been placed on the board', 'Continue');
           break; // Exit the letter loop after placing one hint
@@ -528,8 +553,62 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
     }
   };
 
+  const purchaseHint = async () => {
+    if (gems < 5) {
+      showToast('noGems', 'Not enough gems!', 'Watch ads to get 10 gems', 'WATCH ADS');
+      return;
+    }
+
+    // Deduct 5 gems
+    await updateUser(user?.telegram_id, { gems: gems - 5 });
+
+    // Close the toast
+    setToastVisible(false);
+
+    // Now use the hint
+    const newGrid = [...grid];
+    let hintPlaced = false;
+
+    for (let wordIndex = 0; wordIndex < currentLevelWords.length; wordIndex++) {
+      const wordObj = currentLevelWords[wordIndex];
+      const word = wordObj.word;
+      const positions = wordObj.positions;
+
+      for (let letterIndex = 0; letterIndex < word.length; letterIndex++) {
+        const position = positions[letterIndex];
+
+        if (newGrid[position] === "") {
+          const letter = word[letterIndex];
+          newGrid[position] = letter;
+
+          const rackIndex = letters.findIndex((l) => l === letter);
+          if (rackIndex >= 0) {
+            const newLetters = [...letters];
+            newLetters[rackIndex] = "";
+            setLetters(newLetters);
+          }
+
+          setGrid(newGrid);
+          hintPlaced = true;
+          showToast('hintUsed', 'Hint used!', 'A letter has been placed on the board', 'Continue');
+          break;
+        }
+      }
+
+      if (hintPlaced) break;
+    }
+  };
+
   const handleShuffleClick = () => {
-    if (shuffles < 3) {
+    if (!gameStarted) return;
+    
+    // Check if free shuffles are exhausted
+    if (shuffles >= 3) {
+      // Show purchase prompt
+      showToast('buyShuffle', 'All free shuffles used', 'Purchase a shuffle for 3 gems?', 'PURCHASE');
+      return;
+    }
+
       setShuffles(shuffles + 1);
       if (shuffles + 1 >= 3) {
         const now = new Date();
@@ -538,41 +617,359 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
       // Simple shuffle of rack letters
       setLetters((prev) => [...prev].sort(() => 0.5 - Math.random()));
       showToast('shuffleUsed', 'Letters shuffled!', 'New letter arrangement', 'Continue');
-    } else {
-      showToast('noShuffles', 'WATCH ADS', 'Watch a video ad to get 1 hint and 2 shuffles.', 'WATCH', true);
+  };
+
+  const purchaseShuffle = async () => {
+    if (gems < 3) {
+      showToast('noGems', 'Not enough gems!', 'Watch ads to get 10 gems', 'WATCH ADS');
+      return;
     }
+
+    // Deduct 3 gems
+    await updateUser(user?.telegram_id, { gems: gems - 3 });
+
+    // Close the toast
+    setToastVisible(false);
+
+    // Now shuffle the letters
+    setLetters((prev) => [...prev].sort(() => 0.5 - Math.random()));
+    showToast('shuffleUsed', 'Letters shuffled!', 'New letter arrangement', 'Continue');
   };
 
-  const handleTimeUp = () => {
+  const handleTimeUp = async () => {
+    console.log("handleTimeUp called - isSubmittingRef:", isSubmittingRef.current, "gameStarted:", gameStarted, "currentLevelWords:", currentLevelWords.length);
+    
+    // Prevent multiple calls
+    if (isSubmittingRef.current) {
+      console.log("Already submitting, ignoring time up");
+      return;
+    }
+    
+    // Safety check - don't process if game hasn't started or no words loaded
+    if (!gameStarted || currentLevelWords.length === 0) {
+      console.log("Game not properly started, ignoring time up");
+      return;
+    }
+    
+    console.log("Time up! Current grid state:", grid);
+    console.log("Current words to validate:", currentLevelWords);
+    
+    // Set flags to prevent timer from calling this again
+    isSubmittingRef.current = true;
+    
+    // Stop the timer
     stopTimer();
-    const remaining = Math.max(availableTrials || 0, 0);
-    const remainingText = remaining === 1
-      ? 'you still have 1 more game to play for the day!'
-      : `you still have ${remaining} more games to play for the day!`;
-    showToast('timeUp', 'OOPS! TRY AGAIN.', remainingText, 'PLAY AGAIN');
+    setValidatingWords(true);
+    
+    const currentGrid = [...grid];
+    const wordsToValidate = [...currentLevelWords];
+    
+    let correct = 0;
+    let earnedPoints = 0;
+    const wordResults = [];
+    
+    for (let i = 0; i < wordsToValidate.length; i++) {
+      const wordObj = wordsToValidate[i];
+      const word = wordObj.word;
+      const positions = wordObj.positions;
+      
+      // Extract filled letters from grid
+      const filledLetters = positions.map(pos => currentGrid[pos]);
+      const gridWord = filledLetters.join("");
+      
+      // Check if word is completely filled
+      const isComplete = !filledLetters.includes("");
+      
+      // Skip validation for incomplete words
+      if (!isComplete) {
+        wordResults.push({
+          expected: word,
+          filled: gridWord,
+          isCorrect: false,
+          points: 0,
+          length: word.length,
+          isComplete: false
+        });
+        continue;
+      }
+      
+      // Use API validation for complete words
+      let isWordValid = false;
+      try {
+        isWordValid = await validateWordWithAPI(gridWord.toLowerCase());
+      } catch (error) {
+        console.error(`API validation failed for "${gridWord}":`, error);
+        // Fallback validation - exact match with expected word
+        isWordValid = gridWord.toUpperCase() === word.toUpperCase();
+      }
+      
+      // Calculate points if word is valid
+      let wordPoints = 0;
+      if (isWordValid) {
+        correct++;
+        
+        // Calculate points based on word length
+        switch (gridWord.length) {
+          case 3: wordPoints = 100; break;
+          case 4: wordPoints = 150; break;
+          case 5: wordPoints = 200; break;
+          case 6: wordPoints = 250; break;
+          case 7: wordPoints = 300; break;
+          default: wordPoints = gridWord.length * 100;
+        }
+        
+        earnedPoints += wordPoints;
+      }
+      
+      wordResults.push({
+        expected: word,
+        filled: gridWord,
+        isCorrect: isWordValid,
+        points: wordPoints,
+        length: gridWord.length,
+        isComplete: true
+      });
+    }
+    
+    // Calculate completion statistics
+    const completedWords = wordResults.filter(result => result.isComplete).length;
+    const totalWords = wordsToValidate.length;
+    
+    // Update session score
+    const newSession = sessionScoreRef.current + earnedPoints;
+    sessionScoreRef.current = newSession;
+    setSessionScore(newSession);
+    
+    setValidatingWords(false);
+    
+    // Show appropriate toast based on performance
+    const allWordsCorrect = correct === totalWords && completedWords === totalWords && totalWords > 0 && correct > 0;
+    
+    if (allWordsCorrect) {
+      setToastType("success");
+      setToastMessage(`Perfect! Level ${level} complete!`);
+      setToastMessage2(`+${earnedPoints} Q points (Session: ${newSession})`);
+    } else {
+      // Show continue options
+      setToastType("continueOptions");
+      setToastMessage("Time's up! Choose to continue:");
+      setToastMessage2(`Score: ${correct}/${totalWords} completed words correct`);
+    }
+    
+    setToastVisible(true);
+    isSubmittingRef.current = false; // Reset flag after validation
   };
 
-  const handleGameOver = () => {
-    stopTimer();
-    const remaining = Math.max(availableTrials || 0, 0);
-    const remainingText = remaining === 1
-      ? 'you still have 1 more game to play for the day!'
-      : `you still have ${remaining} more games to play for the day!`;
-    showToast('gameOver', 'OOPS! TRY AGAIN.', remainingText, 'PLAY AGAIN');
-  };
+const handleGameOver = () => {
+  stopTimer();
+  // Reset used words on game over
+  setUsedWords(new Set());
+  const remaining = Math.max(availableTrials || 0, 0);
+  const remainingText = remaining === 1
+    ? 'you still have 1 more game to play for the day!'
+    : `you still have ${remaining} more games to play for the day!`;
+  showToast('gameOver', 'OOPS! TRY AGAIN.', remainingText, 'PLAY AGAIN');
+};
 
-  const restartGame = () => {
-    // Reset to initial state using Jumbo-Jester system
-    setGrid(Array(11).fill(""));
+  const restartGame = async () => {
+    // Reset session score when restarting
+    sessionScoreRef.current = 0;
+    setSessionScore(0);
+    console.log("Restarting game, session score reset");
+    
+    // Try to use a trial
+    const success = await useOneTrial();
+    if (!success) {
+      return; // Don't restart game if no trials available
+    }
+    
+    // Close the toast first
+    setToastVisible(false);
+    
+    // Reset to initial state
+    setLevel(1);
+    const defaultLayout = [3, 3, 3]; // Reset to level 1 layout
+    const defaultTotalCells = defaultLayout.reduce((sum, size) => sum + size, 0);
+    
+    setGridSizes(defaultLayout);
+    setTotalCells(defaultTotalCells);
+    setGrid(Array(defaultTotalCells).fill(""));
     setLetters([]);
     setSelectedLetterIndex(null);
     setSelectedGridIndex(null);
-    setToastVisible(false);
-    setGameStarted(true);
+    setGameStarted(false); // Temporarily set to false
     setIsLoading(false);
     setValidatingWords(false);
-    // Reinitialize the game (this will set the proper timer)
-    setupGame();
+    setIsSubmitting(false);
+    isSubmittingRef.current = false; // Reset submitting ref
+    
+    // Reset used words when restarting
+    setUsedWords(new Set());
+    // Reset pre-filled positions
+    setPreFilledPositions(new Set());
+    
+    // Clear timer using both ref and state
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    setTimerInterval(null);
+    setTimer(0);
+    
+    // Restart the game with a slight delay to ensure state updates
+    setTimeout(() => {
+      setGameStarted(true);
+      // setupGame will fetch words and configure everything
+      setupGame();
+    }, 200);
+  }
+
+  const watchAdToContinue = () => {
+    setToastVisible(false);
+    setToastType("adLoading");
+    setToastMessage("Loading advertisement...");
+    setToastVisible(true);
+
+    // Initialize ad count if not already initialized
+    if (!localStorage.getItem('adCount')) {
+      localStorage.setItem('adCount', '0');
+    }
+
+    const currentAdCount = parseInt(localStorage.getItem('adCount'), 10);
+
+    window.Adsgram?.init({ blockId: "int-13890" })?.show()
+      .then((result) => {
+        setToastVisible(false);
+        if (result.done) {
+          // Increment ad count
+          localStorage.setItem('adCount', String(currentAdCount + 1));
+
+          if (currentAdCount + 1 >= 3) {
+            // Reset ad count after 3 ads
+            localStorage.setItem('adCount', '0');
+            setToastVisible(false);
+            
+            // Clear any existing timer using ref
+            if (timerIntervalRef.current) {
+              clearInterval(timerIntervalRef.current);
+              timerIntervalRef.current = null;
+            }
+            
+            setTimer(30); // Reset timer
+            isSubmittingRef.current = false; // Reset submitting flag
+            
+            // Start timer after state update
+            setTimeout(() => startTimer(), 100);
+          } else {
+            setToastType("info");
+            setToastMessage(`Watch ${3 - (currentAdCount + 1)} more ads to continue`);
+            setToastVisible(true);
+            setTimeout(() => setToastVisible(false), 2000);
+          }
+        } else {
+          setToastType("error");
+          setToastMessage("Ad not completed");
+          setToastVisible(true);
+          setTimeout(() => setToastVisible(false), 2000);
+        }
+      })
+      .catch(() => {
+        setToastVisible(false);
+        setToastType("error");
+        setToastMessage("Failed to load ad");
+        setToastVisible(true);
+        setTimeout(() => setToastVisible(false), 2000);
+      });
+  };
+
+  const deductPointsToContinue = async () => {
+    if (gems < 10) {
+      setToastType("noGems");
+      setToastMessage("Not enough gems!");
+      setToastMessage2("Watch ads to get 10 gems");
+      setToastVisible(true);
+      return;
+    }
+
+    // Deduct 10 gems
+    const newGems = gems - 10;
+
+    await updateUser(user?.telegram_id, { gems: newGems });
+
+    setToastVisible(false);
+    
+    // Clear any existing timer using ref
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    
+    setTimer(30); // Reset timer
+    isSubmittingRef.current = false; // Reset submitting flag
+    
+    // Start timer after state update
+    setTimeout(() => startTimer(), 100);
+  };
+
+  const watchAdForGems = () => {
+    // Hide any existing toast
+    setToastVisible(false);
+    
+    // Show ad loading message
+    setToastType("adLoading");
+    setToastMessage("Loading advertisement...");
+    setToastMessage2("Please wait");
+    setToastVisible(true);
+    
+    // Initialize and show Adsgram ad
+    window.Adsgram?.init({ blockId: "int-13890" })?.show()
+      .then((result) => {
+        // Hide the loading toast
+        setToastVisible(false);
+        
+        if (result.done) {
+          // Ad was watched successfully
+          // Add 10 gems to user account
+          updateUser(user?.telegram_id, { gems: gems + 10 })
+            .then(() => {
+              // Show success message
+              setToastType("gemsEarned");
+              setToastMessage("You earned 10 gems!");
+              setToastMessage2("");
+              setToastVisible(true);
+              
+              // Auto-close success message
+              setTimeout(() => {
+                setToastVisible(false);
+              }, 1500);
+            })
+            .catch(error => {
+              console.error("Error updating user gems:", error);
+              setToastType("error");
+              setToastMessage("Failed to add gems");
+              setToastMessage2("Please try again");
+              setToastVisible(true);
+            });
+        } else {
+          // Ad wasn't completed
+          setToastType("error");
+          setToastMessage("Ad not completed");
+          setToastMessage2("No gems awarded");
+          setToastVisible(true);
+        }
+      })
+      .catch(() => {
+        setToastVisible(false);
+        setToastType("error");
+        setToastMessage("Error playing ad");
+        setToastMessage2("Please try again later");
+        setToastVisible(true);
+        
+        // Auto-close error message
+        setTimeout(() => {
+          setToastVisible(false);
+        }, 3000);
+      });
   };
 
   // Validate a word with Datamuse (exact match)
@@ -619,18 +1016,31 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
   };
 
   // Use Jumbo-Jester setupGame logic
-  const setupGame = (words) => {
-    // Use the Jumbo-Jester word fetching and setup
-    fetchRandomThreeLetterWords(level).then((wordData) => {
+  const setupGame = async () => {
+    try {
+      // Stop any existing timer first using ref for certainty
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+      stopTimer();
+      isSubmittingRef.current = false;
+      timerStartedRef.current = false;
+      
+      const wordData = await fetchRandomThreeLetterWords(level, usedWords);
       setGridSizes(wordData.gridSizes);
       setTotalCells(wordData.totalCells);
       setGrid(Array(wordData.totalCells).fill(""));
       setLetters([]);
       setCurrentLevelWords(wordData.words);
       
-      // Setup grid with pre-filled letters like Jumbo-Jester
+      // Update used words state
+      setUsedWords(new Set([...usedWords, ...wordData.words.map(w => w.word)]));
+      
+      // Setup grid with pre-filled letters
       const newGrid = Array(wordData.totalCells).fill("");
       const positionToLetterMap = new Map();
+      const preFilledPositions = new Set(); // Track pre-filled positions
       
       wordData.words.forEach(wordObj => {
         const word = wordObj.word;
@@ -643,18 +1053,32 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
         });
       });
       
-      // Pre-fill some letters (like Jumbo-Jester does)
+      // Pre-fill some letters (maximum 50% of total cells)
+      // Collect all possible positions to fill
+      const allPossiblePositions = [];
       wordData.words.forEach(wordObj => {
         wordObj.positions.forEach((position, index) => {
           if (position >= 0 && position < wordData.totalCells) {
-            if (Math.random() < 0.6) { // 60% chance to prefill
-              newGrid[position] = wordObj.word[index];
-            }
+            allPossiblePositions.push({ position, letter: wordObj.word[index] });
           }
         });
       });
       
+      // Calculate maximum number of cells to pre-fill (50% of total)
+      const maxPreFilled = Math.floor(wordData.totalCells * 0.5);
+      
+      // Randomly shuffle all positions and select the first maxPreFilled positions
+      const shuffledPositions = [...allPossiblePositions].sort(() => 0.5 - Math.random());
+      const positionsToFill = shuffledPositions.slice(0, maxPreFilled);
+      
+      // Fill the selected positions
+      positionsToFill.forEach(({ position, letter }) => {
+        newGrid[position] = letter;
+        preFilledPositions.add(position); // Mark as pre-filled
+      });
+      
       setGrid(newGrid);
+      setPreFilledPositions(preFilledPositions); // Store pre-filled positions
       
       // Build letter rack
       const emptyPositions = newGrid.map((cell, idx) => cell === "" ? idx : -1).filter(idx => idx !== -1);
@@ -687,10 +1111,22 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
       const minTime = 15;
       const maxTime = 60;
       const baseTime = minTime + Math.floor(emptyPercentage * (maxTime - minTime));
-      setTimer(baseTime);
+      
+      // Stop any existing timer first
       stopTimer();
+      
+      // Set timer value
+      setTimer(baseTime);
+      
+      // Start timer after a short delay to ensure state is updated
+      setTimeout(() => {
+        if (baseTime > 0) {
       startTimer();
-    });
+        }
+      }, 100);
+    } catch (error) {
+      console.error("Error setting up game:", error);
+    }
   };
 
   // Remove getRows function as we're using Jumbo-Jester grid system
@@ -760,6 +1196,15 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
       return; // Don't start game if no trials available
     }
     
+    // Clear any existing timer before starting new game
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    stopTimer();
+    isSubmittingRef.current = false;
+    timerStartedRef.current = false;
+    
     setIsLoading(true);
     setGameStarted(true);
     setupGame();
@@ -768,7 +1213,26 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
   };
 
   const checkAnswers = async () => {
+    // Safety check - don't process if already submitting
+    if (isSubmittingRef.current) {
+      console.log("Already submitting, ignoring duplicate call");
+      return;
+    }
+    
+    // Prevent if modal is already visible
+    if (toastVisible) {
+      console.log("Modal already visible, ignoring check answers");
+      return;
+    }
+    
+    // Safety check - don't process if game hasn't started or no words loaded
+    if (!gameStarted || currentLevelWords.length === 0) {
+      console.log("Game not properly started, cannot check answers");
+      return;
+    }
+    
     setIsSubmitting(true);
+    isSubmittingRef.current = true; // Set ref to prevent timer from triggering
     setValidatingWords(true);
     
     // Stop timer only when submitting answers
@@ -861,7 +1325,7 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
       setSessionScore(newSession);
       
       // Show appropriate toast based on performance
-      const allWordsCorrect = correct === totalWords && completedWords === totalWords;
+      const allWordsCorrect = correct === totalWords && completedWords === totalWords && totalWords > 0 && correct > 0;
       
       console.log('Word validation results:', {
         correct,
@@ -874,11 +1338,12 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
       if (allWordsCorrect) {
         setToastType("success");
         setToastMessage(`Perfect! Level ${level} complete!`);
-        setToastMessage2(`+${earnedPoints} TMS points (Session: ${newSession})`);
+        setToastMessage2(`+${earnedPoints} Q points (Session: ${newSession})`);
       } else {
+        // Show continue options for incomplete levels
         setToastType("continueOptions");
         setToastMessage("You didn't complete the level. Choose to continue:");
-        setToastMessage2(`Score: ${correct}/${totalWords} completed words correct`);
+        setToastMessage2(`Score: ${correct}/${totalWords} completed words correct | Session Score: ${newSession}`);
       }
       
       setToastVisible(true);
@@ -887,19 +1352,38 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
     } finally {
       setValidatingWords(false);
       setIsSubmitting(false);
+      isSubmittingRef.current = false; // Reset ref
     }
   };
 
   const nextLevel = () => {
     setToastVisible(false);
+    
+    // Stop timer and reset ALL flags before advancing
+    stopTimer();
+    
+    // Clear ref to ensure old timer is fully stopped
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    
+    isSubmittingRef.current = false;
+    timerStartedRef.current = false;
+    
     setLevel((prev) => prev + 1);
     setIsLoading(true);
-    fetchThreeWords()
-      .then((words) => {
-        setupGame(words);
-        setGameStarted(true);
-      })
-      .finally(() => setIsLoading(false));
+    
+    // Clear selections
+    setSelectedLetterIndex(null);
+    setSelectedGridIndex(null);
+    
+    // Setup next level
+    setTimeout(() => {
+      setupGame();
+    }, 100);
+    
+    setIsLoading(false);
   };
 
   // Test functions for different modals
@@ -1086,8 +1570,8 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
       </div>
 
       {/* Timer and Action Section */}
-      <div className="timer-section">
-        <div className="timer-wrapper">
+      <div className="timer-section py-1 mb-0">
+        <div className="timer-wrapper mb-1">
           <div className="timer-display">
             <img src="/assets/timer-black.png" alt="Timer" width={16} height={16} />
             <span className="timer-text text-[#ffffff] text-left font-normal">
@@ -1096,15 +1580,15 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
         </div>
         </div>
         
-        <div className="action-buttons">
-          <div className="action-button" onClick={handleHintClick}>
+        <div className="action-buttons pb-0 mb-0">
+          <div className="action-button mb-0" onClick={handleHintClick}>
             <div className="button-icon">
               <img src="/assets/hint.png" alt="Hint" width={50} height={50} />
         </div>
             <span className="button-count text-[#ffffff] text-left font-normal">{Math.min(hints,3)}/3{hintCountdown ? ` (${hintCountdown})` : ''}</span>
         </div>
           
-          <div className="action-buttons-row">
+          <div className="action-buttons-row mb-0">
             <div className="action-button" onClick={handleShuffleClick}>
               <div className="button-icon">
                 <img src="/assets/shuffle.png" alt="Shuffle" width={50} height={50} />
@@ -1114,7 +1598,7 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
             
             <div
               className="action-button"
-              onClick={() => showToast('noHints', 'WATCH ADS', 'Watch a video ad to get 1 hint and 2 shuffles.', 'WATCH', true)}
+              onClick={watchAdForGems}
             >
               <div className="button-icon">
                 <img src="/assets/ads.png" alt="Ads" width={50} height={50} />
@@ -1126,7 +1610,7 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
       </div>
 
       {/* Letter Rack */}
-      <div className="letter-rack">
+      <div className="letter-rack mt-0 pt-0 mb-4 pb-4">
         {letters.map((letter, index) => (
           <div
             key={index}
@@ -1158,7 +1642,7 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
       </div>
 
       {/* Play Button */}
-      <div className="play-button-container">
+      <div className="play-button-container mt-6 pt-6 mb-4">
         <button
           className="play-button"
           onClick={() => {
@@ -2684,12 +3168,19 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
           } else if (toastType === 'success') {
             nextLevel();
           } else if (toastType === 'continueOptions') {
+            // X button on continue options should restart game
             restartGame();
           } else {
             closeToast();
           }
         }}
         onWatchAd={handleWatchAd}
+        onWatchAdToContinue={watchAdToContinue}
+        onDeductPointsToContinue={deductPointsToContinue}
+        onRestartGame={restartGame}
+        onPurchaseHint={purchaseHint}
+        onPurchaseShuffle={purchaseShuffle}
+        onWatchAdForGems={watchAdForGems}
       />
     </div>
   );
