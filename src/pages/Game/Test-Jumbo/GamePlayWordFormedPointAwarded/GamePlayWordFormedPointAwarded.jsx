@@ -971,7 +971,7 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
       }
     }
     
-    // Update TMS points
+    // Update Q points
     const TotalPoints = parseFloat(tmsPoints) + parseFloat(earnedPoints);
     const newTotalPoints = TotalPoints.toFixed(2);
     
@@ -1002,7 +1002,7 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
       console.log("✅ Level complete - showing SUCCESS modal (ALLOWS advancement to next level)");
       setToastType("success");
       setToastMessage(`Perfect! Level ${level} complete!`);
-      setToastMessage2(`+${earnedPoints} TMS points (${newTotalPoints} total)`);
+      setToastMessage2(`+${earnedPoints} Q points (${newTotalPoints} total)`);
       setToastMessage3(`Highest Level: ${highestLevelRef.current} | Session Score: ${newSessionScore} | Best Score: ${highestScoreRef.current}`);
       setShowWatchAds(false); // Ensure watch ads button is not shown
       setToastCta('Continue'); // Set correct CTA
@@ -1729,13 +1729,13 @@ const handleGameOver = () => {
         }
       }
       
-      // Update total TMS points
+      // Update total Q points
       const TotalPoints = parseFloat(tmsPoints) + parseFloat(earnedPoints);
       const newTotalPoints = TotalPoints.toFixed(2);
       
-      console.log(`Updating TMS points: ${tmsPoints} + ${earnedPoints} = ${newTotalPoints}`);
+      console.log(`Updating Q points: ${tmsPoints} + ${earnedPoints} = ${newTotalPoints}`);
       
-      // Update TMS points in the database
+      // Update Q points in the database
       try {
         await updateUser(user?.telegram_id, { tms_points: newTotalPoints });
         console.log("Database updated successfully with new tms_points:", newTotalPoints);
@@ -1762,7 +1762,7 @@ const handleGameOver = () => {
         console.log("✅ Level complete - showing SUCCESS modal (ALLOWS advancement to next level)");
         setToastType("success");
         setToastMessage(`Perfect! Level ${level} complete!`);
-        setToastMessage2(`+${earnedPoints} TMS points (${newTotalPoints} total)`);
+        setToastMessage2(`+${earnedPoints} Q points (${newTotalPoints} total)`);
         setToastMessage3(`Highest Level: ${highestLevelRef.current} | Session Score: ${newSessionScore} | Best Score: ${highestScoreRef.current}`);
         setShowWatchAds(false); // Ensure watch ads button is not shown
         setToastCta('Continue'); // Set correct CTA
