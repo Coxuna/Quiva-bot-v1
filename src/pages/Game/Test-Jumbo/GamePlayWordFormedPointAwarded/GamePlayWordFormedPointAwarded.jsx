@@ -1017,6 +1017,8 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
       setToastMessage2(`Score: ${correct}/${totalWords} completed words correct`);
       setToastMessage3(`Highest Level: ${highestLevelRef.current} | Session Score: ${newSessionScore} | Best Score: ${highestScoreRef.current}`);
       setShowWatchAds(false); // Ensure watch ads button is not shown
+      // Reset ad count for this level attempt
+      localStorage.setItem('adCount', '0');
     }
     
     setToastVisible(true);
@@ -1036,6 +1038,10 @@ const handleGameOver = () => {
 
   const restartGame = async () => {
     console.log("🔄 Restart Game - Resetting to Level 1");
+    
+    // Reset ad count when restarting game
+    localStorage.setItem('adCount', '0');
+    console.log("  Ad count reset to 0");
     
     // Reset session score when restarting
     sessionScoreRef.current = 0;
@@ -1099,6 +1105,7 @@ const handleGameOver = () => {
     console.log("📺 Watch Ads to Continue - Giving 15 more seconds on SAME level (Level does NOT advance)");
     
     setToastVisible(false);
+
     setToastType("adLoading");
     setToastMessage("Loading advertisement...");
     setToastVisible(true);
@@ -1109,18 +1116,21 @@ const handleGameOver = () => {
     }
 
     const currentAdCount = parseInt(localStorage.getItem('adCount'), 10);
+    
+    console.log(`📊 Current ad count: ${currentAdCount}/3`);
 
     window.Adsgram?.init({ blockId: "int-13890" })?.show()
       .then((result) => {
         setToastVisible(false);
         if (result.done) {
+          console.log(`✅ Ad ${currentAdCount + 1} completed`);
+          
           // Increment ad count
           localStorage.setItem('adCount', String(currentAdCount + 1));
 
           if (currentAdCount + 1 >= 3) {
             // Reset ad count after 3 ads
             localStorage.setItem('adCount', '0');
-            setToastVisible(false);
             
             console.log("✅ Watched 3 ads - Adding 15 seconds to SAME level (no level advancement)");
             
@@ -1139,21 +1149,19 @@ const handleGameOver = () => {
             setToastType("info");
             setToastMessage(`Watch ${3 - (currentAdCount + 1)} more ads to continue`);
             setToastVisible(true);
-            setTimeout(() => setToastVisible(false), 2000);
           }
         } else {
           setToastType("error");
           setToastMessage("Ad not completed");
           setToastVisible(true);
-          setTimeout(() => setToastVisible(false), 2000);
         }
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error("Ad error:", error);
         setToastVisible(false);
         setToastType("error");
         setToastMessage("Failed to load ad");
         setToastVisible(true);
-        setTimeout(() => setToastVisible(false), 2000);
       });
   };
 
@@ -1535,6 +1543,10 @@ const handleGameOver = () => {
       return; // Don't start game if no trials available
     }
     
+    // Reset ad count when starting a new game
+    localStorage.setItem('adCount', '0');
+    console.log("🎮 Starting new game - Ad count reset to 0");
+    
     // Clear any existing timer before starting new game
     if (timerIntervalRef.current) {
       clearInterval(timerIntervalRef.current);
@@ -1765,6 +1777,8 @@ const handleGameOver = () => {
         setToastMessage2(`Score: ${correct}/${totalWords} completed words correct`);
         setToastMessage3(`Highest Level: ${highestLevelRef.current} | Session Score: ${newSessionScore} | Best Score: ${highestScoreRef.current}`);
         setShowWatchAds(false); // Ensure watch ads button is not shown
+        // Reset ad count for this level attempt
+        localStorage.setItem('adCount', '0');
       }
       
       setToastVisible(true);
@@ -1780,6 +1794,10 @@ const handleGameOver = () => {
   const nextLevel = () => {
     console.log("🎯 nextLevel() called - Advancing to next level!");
     console.log("✅ User completed level successfully - advancing to next level");
+    
+    // Reset ad count when advancing to next level
+    localStorage.setItem('adCount', '0');
+    console.log("  Ad count reset to 0 for next level");
     
     // IMPORTANT: Set submitting flag and reset timer BEFORE closing modal
     // This prevents the backup useEffect from triggering handleTimeUp again
@@ -1879,10 +1897,10 @@ const handleGameOver = () => {
                       WebkitTextStroke: "none"
                     }}
                   >
-                    {user?.first_name?.charAt(0) || 'U'}
+                    {(user?.username || user?.first_name)?.charAt(0) || 'U'}
               </div>
             </div>
-            <span className="text-[10px] font-medium">{user?.first_name || 'USER'}</span>
+            <span className="text-[10px] font-medium">{user?.username || user?.first_name || 'USER'}</span>
           </div>
           <div className="currency-display">
             <div className="currency-item" title="Q_points">
