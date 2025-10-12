@@ -172,8 +172,8 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
   const [totalCells, setTotalCells] = useState(11);
   const [currentLevelWords, setCurrentLevelWords] = useState([]);
   // Hint/Shuffle usage tracking (3 free per 24h)
-  const [hints, setHints] = useState(0); // number used today
-  const [shuffles, setShuffles] = useState(0); // number used today
+  const [hints, setHints] = useState(null); // number used today - null until loaded from DB
+  const [shuffles, setShuffles] = useState(null); // number used today - null until loaded from DB
   const [lastHintTime, setLastHintTime] = useState(null);
   const [lastShuffleTime, setLastShuffleTime] = useState(null);
   const [hintCountdown, setHintCountdown] = useState("");
@@ -502,6 +502,19 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
       // Update refs
       highestLevelRef.current = storedHighestLevel;
       highestScoreRef.current = storedHighestScore;
+      
+      // Load hint and shuffle counts from database (like Jumbo-Jester)
+      const hintCount = user.hint_count !== undefined && user.hint_count !== null ? Number(user.hint_count) : 0;
+      const shuffleCount = user.shuffle_count !== undefined && user.shuffle_count !== null ? Number(user.shuffle_count) : 0;
+      
+      console.log("📊 Loading hints/shuffles from database:", { hintCount, shuffleCount, last_hint: user.last_hint, last_shuffle: user.last_shuffle });
+      
+      setHints(hintCount);
+      setShuffles(shuffleCount);
+      
+      // Set timestamps for last hint/shuffle
+      setLastHintTime(user.last_hint || null);
+      setLastShuffleTime(user.last_shuffle || null);
     }
   }, [user]);
 
@@ -550,9 +563,12 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
         const resetAt = new Date(lastHintTime).getTime() + 24 * 60 * 60 * 1000;
         const remaining = resetAt - now;
         if (remaining <= 0) {
+          console.log("⏰ useEffect: 24h passed - Resetting hint count to 0");
           setHints(0);
           setLastHintTime(null);
           setHintCountdown("");
+          // Update database to reset hint count (like Jumbo-Jester)
+          updateUser(user?.telegram_id, { hint_count: 0 });
         } else {
           setHintCountdown(formatCountdown(remaining));
         }
@@ -564,9 +580,12 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
         const resetAt = new Date(lastShuffleTime).getTime() + 24 * 60 * 60 * 1000;
         const remaining = resetAt - now;
         if (remaining <= 0) {
+          console.log("⏰ useEffect: 24h passed - Resetting shuffle count to 0");
           setShuffles(0);
           setLastShuffleTime(null);
           setShuffleCountdown("");
+          // Update database to reset shuffle count (like Jumbo-Jester)
+          updateUser(user?.telegram_id, { shuffle_count: 0 });
         } else {
           setShuffleCountdown(formatCountdown(remaining));
         }
@@ -575,14 +594,32 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
       }
     }, 1000);
     return () => clearInterval(interval);
-  }, [hints, lastHintTime, shuffles, lastShuffleTime]);
+  }, [hints, lastHintTime, shuffles, lastShuffleTime, user?.telegram_id, updateUser]);
 
   // Remove the checkWordFormation that shows modal on letter placement
 
   const handleHintClick = async () => {
-    if (!gameStarted) return;
+    if (!gameStarted || hints === null) return;
     
-    // Check if free hints are exhausted
+    // Check if 24 hours have passed since last hint (like Jumbo-Jester)
+    const now = new Date().getTime();
+    if (hints >= 3) {
+      // If last_hint is set and 24 hours have passed, reset the counter
+      if (
+        lastHintTime &&
+        now - new Date(lastHintTime).getTime() > 24 * 60 * 60 * 1000 // 24 hours
+      ) {
+        console.log("🔄 24 hours passed - Resetting hint count to 0");
+        // Reset hint count to 0 in both state and DB (like Jumbo-Jester)
+        await updateUser(user?.telegram_id, { hint_count: 0 });
+        setHints(0);
+        setLastHintTime(null);
+        setHintCountdown(""); // Clear the countdown
+        console.log("✅ Hint count reset complete");
+      }
+    }
+    
+    // Check if free hints are exhausted (after potential reset)
     if (hints >= 3) {
       // Show purchase prompt
       showToast('buyHint', 'All free hints used', 'Purchase a hint for 5 gems?', 'PURCHASE');
@@ -617,16 +654,27 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
           }
 
           setGrid(newGrid);
-          setHints(hints + 1);
+          
+          const newHintCount = hints + 1;
+          setHints(newHintCount);
+          
+          // Always update the database with new hint count
+          const updateData = { hint_count: newHintCount };
           
           // Update last hint time if this is the 3rd hint
-          if (hints + 1 >= 3) {
+          if (newHintCount >= 3) {
             const now = new Date();
-            setLastHintTime(now.toISOString());
+            setLastHintTime(now);
+            updateData.last_hint = now.toISOString().replace("T", " ").split(".")[0];
           }
           
+          // Save to database
+          console.log("💾 Saving hint count to database:", updateData);
+          await updateUser(user?.telegram_id, updateData);
+          console.log("✅ Hint count saved successfully");
+          
           hintPlaced = true;
-          showToast('hintUsed', 'Hint used!', 'A letter has been placed on the board', 'Continue');
+          // No toast needed - hint is placed silently
           break; // Exit the letter loop after placing one hint
         }
       }
@@ -634,10 +682,8 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
       if (hintPlaced) break; // Exit the word loop after placing one hint
     }
 
-    // If no hint could be placed (all positions filled), show a message
-    if (!hintPlaced) {
-      showToast('noHints', 'No hints available', 'All positions are already filled', 'Continue');
-    }
+    // If no hint could be placed (all positions filled), do nothing
+    // No need to show a modal
   };
 
   const purchaseHint = async () => {
@@ -677,7 +723,7 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
 
           setGrid(newGrid);
           hintPlaced = true;
-          showToast('hintUsed', 'Hint used!', 'A letter has been placed on the board', 'Continue');
+          // No toast needed - hint is placed silently
           break;
         }
       }
@@ -686,24 +732,54 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
     }
   };
 
-  const handleShuffleClick = () => {
-    if (!gameStarted) return;
+  const handleShuffleClick = async () => {
+    if (!gameStarted || shuffles === null) return;
     
-    // Check if free shuffles are exhausted
+    // Check if 24 hours have passed since last shuffle (like Jumbo-Jester)
+    const now = new Date().getTime();
+    if (shuffles >= 3) {
+      // If last_shuffle is set and 24 hours have passed, reset the counter
+      if (
+        lastShuffleTime &&
+        now - new Date(lastShuffleTime).getTime() > 24 * 60 * 60 * 1000 // 24 hours
+      ) {
+        console.log("🔄 24 hours passed - Resetting shuffle count to 0");
+        // Reset shuffle count to 0 in both state and DB (like Jumbo-Jester)
+        await updateUser(user?.telegram_id, { shuffle_count: 0 });
+        setShuffles(0);
+        setLastShuffleTime(null);
+        setShuffleCountdown(""); // Clear the countdown
+        console.log("✅ Shuffle count reset complete");
+      }
+    }
+    
+    // Check if free shuffles are exhausted (after potential reset)
     if (shuffles >= 3) {
       // Show purchase prompt
       showToast('buyShuffle', 'All free shuffles used', 'Purchase a shuffle for 3 gems?', 'PURCHASE');
       return;
     }
 
-      setShuffles(shuffles + 1);
-      if (shuffles + 1 >= 3) {
+      const newShuffleCount = shuffles + 1;
+      setShuffles(newShuffleCount);
+      
+      // Always update the database with new shuffle count
+      const updateData = { shuffle_count: newShuffleCount };
+      
+      if (newShuffleCount >= 3) {
         const now = new Date();
-        setLastShuffleTime(now.toISOString());
+        setLastShuffleTime(now);
+        updateData.last_shuffle = now.toISOString().replace("T", " ").split(".")[0];
       }
+      
+      // Save to database
+      console.log("💾 Saving shuffle count to database:", updateData);
+      await updateUser(user?.telegram_id, updateData);
+      console.log("✅ Shuffle count saved successfully");
+      
       // Simple shuffle of rack letters
       setLetters((prev) => [...prev].sort(() => 0.5 - Math.random()));
-      showToast('shuffleUsed', 'Letters shuffled!', 'New letter arrangement', 'Continue');
+      // No toast needed - shuffle happens silently
   };
 
   const purchaseShuffle = async () => {
@@ -720,7 +796,7 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
 
     // Now shuffle the letters
     setLetters((prev) => [...prev].sort(() => 0.5 - Math.random()));
-    showToast('shuffleUsed', 'Letters shuffled!', 'New letter arrangement', 'Continue');
+    // No toast needed - shuffle happens silently
   };
 
   const handleTimeUp = async () => {
@@ -928,6 +1004,8 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
       setToastMessage(`Perfect! Level ${level} complete!`);
       setToastMessage2(`+${earnedPoints} TMS points (${newTotalPoints} total)`);
       setToastMessage3(`Highest Level: ${highestLevelRef.current} | Session Score: ${newSessionScore} | Best Score: ${highestScoreRef.current}`);
+      setShowWatchAds(false); // Ensure watch ads button is not shown
+      setToastCta('Continue'); // Set correct CTA
     } else {
       console.log("⚠️ Level NOT complete - showing CONTINUE OPTIONS modal (BLOCKS advancement)");
       console.log(`  Player can only: (1) Watch ads for 30 more seconds, (2) Pay gems for 30 more seconds, or (3) Restart game`);
@@ -938,6 +1016,7 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
       setToastMessage("Time's up! Choose to continue:");
       setToastMessage2(`Score: ${correct}/${totalWords} completed words correct`);
       setToastMessage3(`Highest Level: ${highestLevelRef.current} | Session Score: ${newSessionScore} | Best Score: ${highestScoreRef.current}`);
+      setShowWatchAds(false); // Ensure watch ads button is not shown
     }
     
     setToastVisible(true);
@@ -1011,8 +1090,8 @@ const handleGameOver = () => {
     setTimeout(() => {
       setGameStarted(true);
       console.log("  Game restarted at Level 1");
-      // setupGame will fetch words and configure everything
-      setupGame();
+      // setupGame will fetch words and configure everything for level 1
+      setupGame(1);
     }, 200);
   }
 
@@ -1216,8 +1295,11 @@ const handleGameOver = () => {
   };
 
   // Use Jumbo-Jester setupGame logic
-  const setupGame = async () => {
+  const setupGame = async (levelToUse = null) => {
     try {
+      // Use provided level or fall back to state level
+      const currentLevel = levelToUse !== null ? levelToUse : level;
+      
       // Stop any existing timer first using ref for certainty
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
@@ -1227,7 +1309,7 @@ const handleGameOver = () => {
       isSubmittingRef.current = false;
       timerStartedRef.current = false;
       
-      const wordData = await fetchRandomThreeLetterWords(level, usedWords);
+      const wordData = await fetchRandomThreeLetterWords(currentLevel, usedWords);
       setGridSizes(wordData.gridSizes);
       setTotalCells(wordData.totalCells);
       setGrid(Array(wordData.totalCells).fill(""));
@@ -1670,6 +1752,8 @@ const handleGameOver = () => {
         setToastMessage(`Perfect! Level ${level} complete!`);
         setToastMessage2(`+${earnedPoints} TMS points (${newTotalPoints} total)`);
         setToastMessage3(`Highest Level: ${highestLevelRef.current} | Session Score: ${newSessionScore} | Best Score: ${highestScoreRef.current}`);
+        setShowWatchAds(false); // Ensure watch ads button is not shown
+        setToastCta('Continue'); // Set correct CTA
       } else {
         console.log("⚠️ Level NOT complete - showing CONTINUE OPTIONS modal (BLOCKS advancement)");
         console.log(`  Player can only: (1) Watch ads for 30 more seconds, (2) Pay gems for 30 more seconds, or (3) Restart game`);
@@ -1680,6 +1764,7 @@ const handleGameOver = () => {
         setToastMessage("You didn't complete the level. Choose to continue:");
         setToastMessage2(`Score: ${correct}/${totalWords} completed words correct`);
         setToastMessage3(`Highest Level: ${highestLevelRef.current} | Session Score: ${newSessionScore} | Best Score: ${highestScoreRef.current}`);
+        setShowWatchAds(false); // Ensure watch ads button is not shown
       }
       
       setToastVisible(true);
@@ -1693,76 +1778,59 @@ const handleGameOver = () => {
   };
 
   const nextLevel = () => {
-    console.log("🎯 nextLevel() called - This should ONLY happen when all words are correct!");
+    console.log("🎯 nextLevel() called - Advancing to next level!");
+    console.log("✅ User completed level successfully - advancing to next level");
     
-    // SAFETY CHECK: Verify all rows are complete before advancing
-    // This prevents accidental level advancement
-    const allComplete = currentLevelWords.every(wordObj => {
-      const positions = wordObj.positions;
-      const filledLetters = positions.map(pos => grid[pos]);
-      const isComplete = !filledLetters.includes("");
-      const gridWord = filledLetters.join("");
-      const isCorrect = gridWord.toUpperCase() === wordObj.word.toUpperCase();
-      
-      console.log(`  Checking row: "${wordObj.word}" - Complete: ${isComplete}, Correct: ${isCorrect}`);
-      return isComplete && isCorrect;
-    });
+    // IMPORTANT: Set submitting flag and reset timer BEFORE closing modal
+    // This prevents the backup useEffect from triggering handleTimeUp again
+    isSubmittingRef.current = true;
+    setTimer(-1); // Set to -1 to prevent backup trigger
     
-    if (!allComplete) {
-      console.error("❌ CRITICAL: nextLevel() called but not all words are correct! Blocking advancement.");
-      console.error("Current grid:", grid);
-      console.error("Expected words:", currentLevelWords);
-      alert("Error: Cannot advance - not all words are correct!");
-      setToastVisible(false);
-      return; // Block level advancement
-    }
-    
-    console.log("✅ All words verified correct - advancing to next level");
-    
-    setToastVisible(false);
-    
-    // Stop timer and reset ALL flags before advancing
+    // Stop timer and clear interval
     stopTimer();
-    
-    // Clear ref to ensure old timer is fully stopped
     if (timerIntervalRef.current) {
       clearInterval(timerIntervalRef.current);
       timerIntervalRef.current = null;
     }
     
-    isSubmittingRef.current = false;
-    timerStartedRef.current = false;
+    // Close modal
+    setToastVisible(false);
     
-    // Increment level
-    const newLevel = level + 1;
-    setLevel(newLevel);
-    
-    // Update highest level if needed
-    if (newLevel > highestLevelRef.current) {
-      highestLevelRef.current = newLevel;
-      setHighestLevel(newLevel);
-      
-      // Save the new highest level to database
-      try {
-        updateUser(user?.telegram_id, { highest_level: newLevel });
-        console.log("Updated highest level in database:", newLevel);
-      } catch (error) {
-        console.error("Failed to update highest level:", error);
-      }
-    }
-    
-    setIsLoading(true);
-    
-    // Clear selections
-    setSelectedLetterIndex(null);
-    setSelectedGridIndex(null);
-    
-    // Setup next level
+    // Wait for modal to close, then proceed with level advancement
     setTimeout(() => {
-      setupGame();
-    }, 100);
-    
-    setIsLoading(false);
+      timerStartedRef.current = false;
+      
+      // Increment level
+      const newLevel = level + 1;
+      setLevel(newLevel);
+      
+      // Update highest level if needed
+      if (newLevel > highestLevelRef.current) {
+        highestLevelRef.current = newLevel;
+        setHighestLevel(newLevel);
+        
+        // Save the new highest level to database
+        try {
+          updateUser(user?.telegram_id, { highest_level: newLevel });
+          console.log("Updated highest level in database:", newLevel);
+        } catch (error) {
+          console.error("Failed to update highest level:", error);
+        }
+      }
+      
+      setIsLoading(true);
+      
+      // Clear selections
+      setSelectedLetterIndex(null);
+      setSelectedGridIndex(null);
+      
+      // Setup next level with updated state
+      setTimeout(() => {
+        setupGame(newLevel);
+        setIsLoading(false);
+        isSubmittingRef.current = false; // Reset flag after level setup
+      }, 100);
+    }, 50);
   };
 
   // Test functions for different modals
@@ -1964,7 +2032,7 @@ const handleGameOver = () => {
             <div className="button-icon">
               <img src="/assets/hint.png" alt="Hint" width={50} height={50} />
         </div>
-            <span className="button-count text-[#ffffff] text-left font-normal">{Math.min(hints,3)}/3{hintCountdown ? ` (${hintCountdown})` : ''}</span>
+            <span className="button-count text-[#ffffff] text-left font-normal">{hints !== null ? Math.min(hints, 3) : 0}/3{hintCountdown ? ` (${hintCountdown})` : ''}</span>
         </div>
           
           <div className="action-buttons-row mb-0">
@@ -1972,7 +2040,7 @@ const handleGameOver = () => {
               <div className="button-icon">
                 <img src="/assets/shuffle.png" alt="Shuffle" width={50} height={50} />
         </div>
-              <span className="button-count text-[#ffffff] text-left font-normal">{Math.min(shuffles,3)}/3{shuffleCountdown ? ` (${shuffleCountdown})` : ''}</span>
+              <span className="button-count text-[#ffffff] text-left font-normal">{shuffles !== null ? Math.min(shuffles, 3) : 0}/3{shuffleCountdown ? ` (${shuffleCountdown})` : ''}</span>
       </div>
             
             <div
