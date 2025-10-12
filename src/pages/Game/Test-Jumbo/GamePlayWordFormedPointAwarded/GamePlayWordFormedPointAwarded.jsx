@@ -190,6 +190,7 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
   const [toastType, setToastType] = useState('');
   const [toastMessage, setToastMessage] = useState('');
   const [toastMessage2, setToastMessage2] = useState('');
+  const [toastMessage3, setToastMessage3] = useState('');
   const [toastCta, setToastCta] = useState('Continue');
   const [showWatchAds, setShowWatchAds] = useState(false);
 
@@ -201,6 +202,10 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
   const [sessionScore, setSessionScore] = useState(0);
   const sessionScoreRef = useRef(0);
   const [expectedWords, setExpectedWords] = useState(['EAT', 'PLAY', 'WORD']); // 3-4-4 default
+  const [highestLevel, setHighestLevel] = useState(1);
+  const [highestScore, setHighestScore] = useState(0);
+  const highestLevelRef = useRef(1);
+  const highestScoreRef = useRef(0);
   // Header stats
   const [availableTrials, setAvailableTrials] = useState(null);
   const [freeTrials, setFreeTrials] = useState(null);
@@ -233,9 +238,23 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
 
   // Jumbo-Jester letter selection logic
   const selectLetter = (index) => {
-    if (!gameStarted || !letters[index]) return;
+    console.log('selectLetter called:', { 
+      index, 
+      gameStarted, 
+      letter: letters[index],
+      selectedGridIndex 
+    });
+    
+    if (!gameStarted || !letters[index]) {
+      console.log('Cannot select letter - game not started or no letter at index');
+      return;
+    }
+    
+    console.log('Letter selected from rack:', letters[index]);
     setSelectedLetterIndex(index);
+    
     if (selectedGridIndex !== null) {
+      console.log('Grid position already selected, placing letter immediately');
       placeLetter(index, selectedGridIndex);
       setSelectedLetterIndex(null);
       setSelectedGridIndex(null);
@@ -244,15 +263,40 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
 
   // Jumbo-Jester grid selection logic
   const selectGridPosition = (index) => {
-    if (!gameStarted) return;
+    // Calculate which row this position is in
+    const row1End = gridSizes[0];
+    const row2End = row1End + gridSizes[1];
+    const isLastRow = index >= row2End;
+    
+    console.log('selectGridPosition called:', { 
+      index, 
+      gameStarted, 
+      isPrefilled: preFilledPositions.has(index),
+      gridValue: grid[index],
+      selectedLetterIndex,
+      selectedGridIndex,
+      isLastRow: isLastRow,
+      rowInfo: `Position ${index} is in row ${index < row1End ? 1 : index < row2End ? 2 : 3}`
+    });
+    
+    if (isLastRow) {
+      console.log('🎯 LAST ROW CLICKED! Position:', index);
+    }
+    
+    if (!gameStarted) {
+      console.log('Game not started, ignoring click');
+      return;
+    }
   
     // Prevent selecting pre-filled positions
     if (preFilledPositions.has(index)) {
+      console.log('Position is pre-filled, ignoring click');
       return; // Do nothing if this is a pre-filled position
     }
   
     // If the position contains a letter and no letter is currently selected from grid
     if (grid[index] !== "" && selectedGridIndex === null) {
+      console.log('Selecting filled position for moving');
       setSelectedGridIndex(index);
       return;
     }
@@ -261,11 +305,13 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
     if (selectedGridIndex !== null && grid[selectedGridIndex] !== "") {
       // Prevent moving to or from pre-filled positions
       if (preFilledPositions.has(selectedGridIndex) || preFilledPositions.has(index)) {
+        console.log('Cannot move pre-filled letter');
         setSelectedGridIndex(null);
         return;
       }
   
       // Swap positions within the grid
+      console.log('Swapping or moving letter within grid');
       const newGrid = [...grid];
       const temp = newGrid[selectedGridIndex];
   
@@ -287,8 +333,10 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
   
     // Handle normal case (empty grid position)
     if (grid[index] === "") {
+      console.log('Empty position clicked');
       setSelectedGridIndex(index);
       if (selectedLetterIndex !== null) {
+        console.log('Placing letter from rack at position', index);
         placeLetter(selectedLetterIndex, index);
         setSelectedLetterIndex(null);
         setSelectedGridIndex(null);
@@ -338,31 +386,50 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
       timerIntervalRef.current = null;
     }
     
-    console.log('Starting new timer');
+    console.log('Starting new timer from:', timer);
     
     const interval = setInterval(() => {
       setTimer((prev) => {
+        // Only log every 5 seconds to reduce console noise
+        if (prev % 5 === 0 || prev <= 5) {
+          console.log(`⏱️ Timer: ${prev}s`);
+        }
+        
         // Check if we're submitting
         if (isSubmittingRef.current) {
-          console.log('Timer paused due to submission');
+          console.log('  ⏸️ Timer paused due to submission');
           return prev;
         }
         
         // Check if time is up
         if (prev <= 1) {
-          console.log('Timer reached 0, calling handleTimeUp');
+          console.log('⏰ ⏰ ⏰ TIMER REACHED 0! ⏰ ⏰ ⏰');
+          console.log('  Current state:');
+          console.log('    isSubmittingRef.current:', isSubmittingRef.current);
+          console.log('    gameStarted:', gameStarted);
+          console.log('    currentLevelWords.length:', currentLevelWords.length);
+          console.log('    toastVisible:', toastVisible);
           
           // Clear the interval immediately
           if (timerIntervalRef.current) {
+            console.log('  🧹 Clearing timer interval');
             clearInterval(timerIntervalRef.current);
             timerIntervalRef.current = null;
           }
           setTimerInterval(null);
           
-          // Call handleTimeUp if not already submitting
-          if (!isSubmittingRef.current) {
-            setTimeout(() => handleTimeUp(), 0);
-          }
+          // CRITICAL FIX: Always call handleTimeUp when timer reaches 0
+          console.log('  📢 Scheduling handleTimeUp() call...');
+          setTimeout(() => {
+            // Double check handleTimeUp hasn't already been called
+            if (!isSubmittingRef.current) {
+              console.log('  ✅ Calling handleTimeUp() now');
+              handleTimeUp();
+            } else {
+              console.log('  ⚠️ handleTimeUp blocked - isSubmittingRef is true (already processing)');
+            }
+          }, 0);
+          
           return 0;
         }
         
@@ -388,6 +455,15 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
     // Always set state to null
     setTimerInterval(null);
   };
+
+  // Backup mechanism: Watch timer state and trigger handleTimeUp if it reaches 0
+  useEffect(() => {
+    if (gameStarted && timer === 0 && !isSubmittingRef.current && !toastVisible && currentLevelWords.length > 0) {
+      console.log('🚨 BACKUP TRIGGER: Timer is 0 but modal not shown - calling handleTimeUp');
+      handleTimeUp();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timer, gameStarted, toastVisible, currentLevelWords.length]);
 
   useEffect(() => {
     // Don't start timer on mount - only start when game begins
@@ -415,6 +491,17 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
       setPurchasedTrials(purchasedTr);
       setAvailableTrials(freeTr + purchasedTr);
       setLastTrialTime(user.last_jumbo || null);
+      
+      // Load highest level and score
+      const storedHighestLevel = user.highest_level || 1;
+      const storedHighestScore = user.highest_score || 0;
+      
+      setHighestLevel(storedHighestLevel);
+      setHighestScore(storedHighestScore);
+      
+      // Update refs
+      highestLevelRef.current = storedHighestLevel;
+      highestScoreRef.current = storedHighestScore;
     }
   }, [user]);
 
@@ -637,22 +724,37 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
   };
 
   const handleTimeUp = async () => {
-    console.log("handleTimeUp called - isSubmittingRef:", isSubmittingRef.current, "gameStarted:", gameStarted, "currentLevelWords:", currentLevelWords.length);
+    console.log("🚀 handleTimeUp() CALLED");
+    console.log("  isSubmittingRef.current:", isSubmittingRef.current);
+    console.log("  gameStarted:", gameStarted);
+    console.log("  currentLevelWords.length:", currentLevelWords.length);
+    console.log("  toastVisible:", toastVisible);
     
     // Prevent multiple calls
     if (isSubmittingRef.current) {
-      console.log("Already submitting, ignoring time up");
+      console.log("  ❌ BLOCKED: Already submitting, ignoring time up");
       return;
     }
     
     // Safety check - don't process if game hasn't started or no words loaded
-    if (!gameStarted || currentLevelWords.length === 0) {
-      console.log("Game not properly started, ignoring time up");
+    if (!gameStarted) {
+      console.log("  ❌ BLOCKED: Game not started");
       return;
     }
     
-    console.log("Time up! Current grid state:", grid);
+    if (currentLevelWords.length === 0) {
+      console.log("  ❌ BLOCKED: No words loaded");
+      return;
+    }
+    
+    console.log("  ✅ All checks passed - proceeding with time up validation");
+    
+    console.log("=== TIME UP VALIDATION DEBUG ===");
+    console.log("Current grid state:", grid);
+    console.log("Grid sizes:", gridSizes);
+    console.log("Total cells:", totalCells);
     console.log("Current words to validate:", currentLevelWords);
+    console.log("================================");
     
     // Set flags to prevent timer from calling this again
     isSubmittingRef.current = true;
@@ -673,15 +775,28 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
       const word = wordObj.word;
       const positions = wordObj.positions;
       
+      console.log(`\n--- Checking Row ${i + 1} ---`);
+      console.log(`Expected word: "${word}"`);
+      console.log(`Positions to check:`, positions);
+      
       // Extract filled letters from grid
-      const filledLetters = positions.map(pos => currentGrid[pos]);
+      const filledLetters = positions.map(pos => {
+        const letter = currentGrid[pos];
+        console.log(`  Position ${pos}: "${letter || 'EMPTY'}"`);
+        return letter;
+      });
       const gridWord = filledLetters.join("");
+      
+      console.log(`Filled letters:`, filledLetters);
+      console.log(`Formed word: "${gridWord}"`);
       
       // Check if word is completely filled
       const isComplete = !filledLetters.includes("");
+      console.log(`Is complete? ${isComplete}`);
       
-      // Skip validation for incomplete words
+      // IMPORTANT: Skip validation for incomplete words - they're automatically marked as incorrect
       if (!isComplete) {
+        console.log(`❌ Row ${i + 1}: Word "${word}" is INCOMPLETE (filled: "${gridWord}") - Marked as incorrect with 0 points`);
         wordResults.push({
           expected: word,
           filled: gridWord,
@@ -690,17 +805,29 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
           length: word.length,
           isComplete: false
         });
-        continue;
+        continue; // Skip to next word without validating
       }
       
-      // Use API validation for complete words
+      console.log(`✓ Row ${i + 1}: Word "${word}" is complete (filled: "${gridWord}") - Validating...`);
+      
+      // Validate with API - allowing valid words since 60-75% pre-filling reduces random chance
       let isWordValid = false;
       try {
+        // First try exact match with expected word (bonus: faster)
+        if (gridWord.toUpperCase() === word.toUpperCase()) {
+          isWordValid = true;
+          console.log(`  ✅ Exact match: "${gridWord}" matches expected "${word}"`);
+        } else {
+          // Then validate with API to allow alternative valid words
+          console.log(`  🔍 Word doesn't match expected, checking API for "${gridWord}"...`);
         isWordValid = await validateWordWithAPI(gridWord.toLowerCase());
+          console.log(`  ${isWordValid ? '✅' : '❌'} API validation for "${gridWord}": ${isWordValid ? "Valid English word" : "Invalid word"}`);
+        }
       } catch (error) {
-        console.error(`API validation failed for "${gridWord}":`, error);
+        console.error(`  ❌ API validation failed for "${gridWord}":`, error);
         // Fallback validation - exact match with expected word
         isWordValid = gridWord.toUpperCase() === word.toUpperCase();
+        console.log(`  Fallback to exact match: ${isWordValid}`);
       }
       
       // Calculate points if word is valid
@@ -719,6 +846,9 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
         }
         
         earnedPoints += wordPoints;
+        console.log(`  💰 Points earned: ${wordPoints} (Total so far: ${earnedPoints})`);
+      } else {
+        console.log(`  ❌ No points - word is invalid`);
       }
       
       wordResults.push({
@@ -729,31 +859,85 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
         length: gridWord.length,
         isComplete: true
       });
+      
+      console.log(`--- End Row ${i + 1} ---\n`);
     }
+    
+    console.log("=== FINAL RESULTS ===");
+    console.log(`Correct words: ${correct}/${wordsToValidate.length}`);
+    console.log(`Total points earned: ${earnedPoints}`);
+    console.log("Word results:", wordResults);
+    console.log("====================");
     
     // Calculate completion statistics
     const completedWords = wordResults.filter(result => result.isComplete).length;
     const totalWords = wordsToValidate.length;
     
     // Update session score
-    const newSession = sessionScoreRef.current + earnedPoints;
-    sessionScoreRef.current = newSession;
-    setSessionScore(newSession);
+    const newSessionScore = sessionScoreRef.current + earnedPoints;
+    sessionScoreRef.current = newSessionScore;
+    setSessionScore(newSessionScore);
+    
+    console.log(`Current session score: ${newSessionScore}`);
+    
+    // Compare with highest score
+    if (newSessionScore > parseFloat(highestScoreRef.current)) {
+      console.log(`New highest score: ${newSessionScore} (old: ${highestScoreRef.current})`);
+      highestScoreRef.current = newSessionScore;
+      setHighestScore(newSessionScore);
+      
+      // Save to database
+      try {
+        await updateUser(user?.telegram_id, { highest_score: newSessionScore });
+        console.log("Updated highest score in database:", newSessionScore);
+      } catch (error) {
+        console.error("Failed to update highest score:", error);
+      }
+    }
+    
+    // Update TMS points
+    const TotalPoints = parseFloat(tmsPoints) + parseFloat(earnedPoints);
+    const newTotalPoints = TotalPoints.toFixed(2);
+    
+    try {
+      await updateUser(user?.telegram_id, { tms_points: newTotalPoints });
+      console.log("Database updated successfully with new tms_points:", newTotalPoints);
+    } catch (error) {
+      console.error("Error updating database:", error);
+    }
     
     setValidatingWords(false);
     
     // Show appropriate toast based on performance
+    // STRICT: ALL words must be completed AND correct to advance
     const allWordsCorrect = correct === totalWords && completedWords === totalWords && totalWords > 0 && correct > 0;
     
+    console.log("=== LEVEL COMPLETION CHECK ===");
+    console.log(`All words correct? ${allWordsCorrect}`);
+    console.log(`Correct: ${correct}, Completed: ${completedWords}, Total: ${totalWords}`);
+    console.log(`Condition breakdown:`);
+    console.log(`  - correct === totalWords? ${correct === totalWords} (${correct} === ${totalWords})`);
+    console.log(`  - completedWords === totalWords? ${completedWords === totalWords} (${completedWords} === ${totalWords})`);
+    console.log(`  - totalWords > 0? ${totalWords > 0}`);
+    console.log(`  - correct > 0? ${correct > 0}`);
+    console.log("==============================");
+    
     if (allWordsCorrect) {
+      console.log("✅ Level complete - showing SUCCESS modal (ALLOWS advancement to next level)");
       setToastType("success");
       setToastMessage(`Perfect! Level ${level} complete!`);
-      setToastMessage2(`+${earnedPoints} Q points (Session: ${newSession})`);
+      setToastMessage2(`+${earnedPoints} TMS points (${newTotalPoints} total)`);
+      setToastMessage3(`Highest Level: ${highestLevelRef.current} | Session Score: ${newSessionScore} | Best Score: ${highestScoreRef.current}`);
     } else {
-      // Show continue options
+      console.log("⚠️ Level NOT complete - showing CONTINUE OPTIONS modal (BLOCKS advancement)");
+      console.log(`  Player can only: (1) Watch ads for 30 more seconds, (2) Pay gems for 30 more seconds, or (3) Restart game`);
+      console.log(`  Player CANNOT advance to next level unless they complete all ${totalWords} words correctly`);
+      
+      // Show continue options - player did NOT complete level
       setToastType("continueOptions");
       setToastMessage("Time's up! Choose to continue:");
       setToastMessage2(`Score: ${correct}/${totalWords} completed words correct`);
+      setToastMessage3(`Highest Level: ${highestLevelRef.current} | Session Score: ${newSessionScore} | Best Score: ${highestScoreRef.current}`);
     }
     
     setToastVisible(true);
@@ -772,22 +956,29 @@ const handleGameOver = () => {
 };
 
   const restartGame = async () => {
+    console.log("🔄 Restart Game - Resetting to Level 1");
+    
     // Reset session score when restarting
     sessionScoreRef.current = 0;
     setSessionScore(0);
-    console.log("Restarting game, session score reset");
+    console.log("  Session score reset to 0");
     
     // Try to use a trial
     const success = await useOneTrial();
     if (!success) {
+      console.log("  ❌ No trials available - cannot restart");
       return; // Don't restart game if no trials available
     }
+    
+    console.log("  ✅ Trial used - proceeding with restart");
     
     // Close the toast first
     setToastVisible(false);
     
     // Reset to initial state
     setLevel(1);
+    console.log("  Level reset to 1");
+    
     const defaultLayout = [3, 3, 3]; // Reset to level 1 layout
     const defaultTotalCells = defaultLayout.reduce((sum, size) => sum + size, 0);
     
@@ -819,12 +1010,15 @@ const handleGameOver = () => {
     // Restart the game with a slight delay to ensure state updates
     setTimeout(() => {
       setGameStarted(true);
+      console.log("  Game restarted at Level 1");
       // setupGame will fetch words and configure everything
       setupGame();
     }, 200);
   }
 
   const watchAdToContinue = () => {
+    console.log("📺 Watch Ads to Continue - Giving 15 more seconds on SAME level (Level does NOT advance)");
+    
     setToastVisible(false);
     setToastType("adLoading");
     setToastMessage("Loading advertisement...");
@@ -849,13 +1043,15 @@ const handleGameOver = () => {
             localStorage.setItem('adCount', '0');
             setToastVisible(false);
             
+            console.log("✅ Watched 3 ads - Adding 15 seconds to SAME level (no level advancement)");
+            
             // Clear any existing timer using ref
             if (timerIntervalRef.current) {
               clearInterval(timerIntervalRef.current);
               timerIntervalRef.current = null;
             }
             
-            setTimer(30); // Reset timer
+            setTimer(15); // Reset timer - reduced to match faster gameplay
             isSubmittingRef.current = false; // Reset submitting flag
             
             // Start timer after state update
@@ -883,6 +1079,8 @@ const handleGameOver = () => {
   };
 
   const deductPointsToContinue = async () => {
+    console.log("💎 Use 10 Gems to Continue - Giving 15 more seconds on SAME level (Level does NOT advance)");
+    
     if (gems < 10) {
       setToastType("noGems");
       setToastMessage("Not enough gems!");
@@ -898,13 +1096,15 @@ const handleGameOver = () => {
 
     setToastVisible(false);
     
+    console.log("✅ Used 10 gems - Adding 15 seconds to SAME level (no level advancement)");
+    
     // Clear any existing timer using ref
     if (timerIntervalRef.current) {
       clearInterval(timerIntervalRef.current);
       timerIntervalRef.current = null;
     }
     
-    setTimer(30); // Reset timer
+    setTimer(15); // Reset timer - reduced to match faster gameplay
     isSubmittingRef.current = false; // Reset submitting flag
     
     // Start timer after state update
@@ -1053,28 +1253,75 @@ const handleGameOver = () => {
         });
       });
       
-      // Pre-fill some letters (maximum 50% of total cells)
-      // Collect all possible positions to fill
-      const allPossiblePositions = [];
-      wordData.words.forEach(wordObj => {
-        wordObj.positions.forEach((position, index) => {
-          if (position >= 0 && position < wordData.totalCells) {
-            allPossiblePositions.push({ position, letter: wordObj.word[index] });
+      // Pre-fill letters strategically - ensuring each row has guidance
+      // Strategy: Fill 60-70% of each word's letters to guide users to the expected word
+      
+      // Process each word/row individually to ensure balanced pre-filling
+      wordData.words.forEach((wordObj, rowIndex) => {
+        const word = wordObj.word;
+        const positions = wordObj.positions;
+        const wordLength = word.length;
+        
+        // Calculate how many letters to pre-fill for this word
+        // Use 65-75% range, randomized per word
+        const preFilledPercentage = 0.65 + Math.random() * 0.1; // 65-75%
+        const numToPreFill = Math.max(
+          Math.floor(wordLength * preFilledPercentage),
+          Math.ceil(wordLength * 0.6) // Minimum 60%
+        );
+        
+        // Create array of indices for this word
+        const wordIndices = Array.from({ length: wordLength }, (_, i) => i);
+        
+        // Strategically select positions to pre-fill
+        // Prioritize: first letter (40% chance), last letter (40% chance), middle letters (always)
+        const positionsToPreFill = [];
+        
+        // Always include some middle letters for guidance
+        const middleStart = Math.floor(wordLength * 0.3);
+        const middleEnd = Math.ceil(wordLength * 0.7);
+        
+        // Shuffle word indices
+        const shuffledIndices = [...wordIndices].sort(() => 0.5 - Math.random());
+        
+        // Select positions ensuring good distribution
+        for (let i = 0; i < shuffledIndices.length && positionsToPreFill.length < numToPreFill; i++) {
+          const idx = shuffledIndices[i];
+          
+          // Prioritize middle positions, but include edges sometimes
+          const isMiddle = idx >= middleStart && idx < middleEnd;
+          const isEdge = idx === 0 || idx === wordLength - 1;
+          
+          if (isMiddle) {
+            positionsToPreFill.push(idx);
+          } else if (isEdge && Math.random() < 0.5) {
+            positionsToPreFill.push(idx);
+          } else if (positionsToPreFill.length < numToPreFill) {
+            positionsToPreFill.push(idx);
+          }
+        }
+        
+        // Ensure we have enough pre-filled positions
+        while (positionsToPreFill.length < numToPreFill && positionsToPreFill.length < wordLength) {
+          const remainingIndices = wordIndices.filter(idx => !positionsToPreFill.includes(idx));
+          if (remainingIndices.length > 0) {
+            const randomIdx = remainingIndices[Math.floor(Math.random() * remainingIndices.length)];
+            positionsToPreFill.push(randomIdx);
+          } else {
+            break;
+          }
+        }
+        
+        // Fill the selected positions in the grid
+        positionsToPreFill.forEach(idx => {
+          const gridPosition = positions[idx];
+          if (gridPosition >= 0 && gridPosition < wordData.totalCells) {
+            newGrid[gridPosition] = word[idx];
+            preFilledPositions.add(gridPosition);
           }
         });
-      });
-      
-      // Calculate maximum number of cells to pre-fill (50% of total)
-      const maxPreFilled = Math.floor(wordData.totalCells * 0.5);
-      
-      // Randomly shuffle all positions and select the first maxPreFilled positions
-      const shuffledPositions = [...allPossiblePositions].sort(() => 0.5 - Math.random());
-      const positionsToFill = shuffledPositions.slice(0, maxPreFilled);
-      
-      // Fill the selected positions
-      positionsToFill.forEach(({ position, letter }) => {
-        newGrid[position] = letter;
-        preFilledPositions.add(position); // Mark as pre-filled
+        
+        console.log(`Row ${rowIndex + 1}: Word "${word}" - Pre-filled ${positionsToPreFill.length}/${wordLength} letters (${Math.round(positionsToPreFill.length/wordLength*100)}%)`);
       });
       
       setGrid(newGrid);
@@ -1106,22 +1353,32 @@ const handleGameOver = () => {
       const allRackLetters = [...requiredLetters, ...distractions].sort(() => 0.5 - Math.random());
       setLetters(allRackLetters);
       
-      // Set timer
+      // Set timer - significantly reduced since 60-75% is already pre-filled
       const emptyPercentage = emptyPositions.length / wordData.totalCells;
-      const minTime = 15;
-      const maxTime = 60;
+      const minTime = 8; // Minimum time when very few cells empty
+      const maxTime = 25; // Maximum time when many cells empty
       const baseTime = minTime + Math.floor(emptyPercentage * (maxTime - minTime));
+      
+      console.log(`⏱️ Timer calculation: ${emptyPositions.length}/${wordData.totalCells} empty (${Math.round(emptyPercentage * 100)}%) → ${baseTime} seconds`);
+      console.log(`  60-75% pre-filled = faster gameplay with ${minTime}-${maxTime}s range`);
       
       // Stop any existing timer first
       stopTimer();
       
       // Set timer value
       setTimer(baseTime);
+      console.log(`  Timer set to ${baseTime} seconds`);
+      
+      // Reset submitting flag to ensure timer can complete
+      isSubmittingRef.current = false;
       
       // Start timer after a short delay to ensure state is updated
       setTimeout(() => {
         if (baseTime > 0) {
-      startTimer();
+          console.log(`  Starting timer countdown from ${baseTime} seconds...`);
+          startTimer();
+        } else {
+          console.log(`  ⚠️ Timer is 0 or less, not starting`);
         }
       }, 100);
     } catch (error) {
@@ -1239,6 +1496,13 @@ const handleGameOver = () => {
     stopTimer();
 
     try {
+      console.log("=== SUBMIT VALIDATION DEBUG ===");
+      console.log("Current grid state:", grid);
+      console.log("Grid sizes:", gridSizes);
+      console.log("Total cells:", totalCells);
+      console.log("Current words to validate:", currentLevelWords);
+      console.log("================================");
+      
       let correct = 0;
       let earnedPoints = 0;
       const wordResults = [];
@@ -1249,8 +1513,16 @@ const handleGameOver = () => {
         const word = wordObj.word;
         const positions = wordObj.positions;
         
+        console.log(`\n--- Checking Row ${i + 1} ---`);
+        console.log(`Expected word: "${word}"`);
+        console.log(`Positions to check:`, positions);
+        
         // Extract the filled letters from the grid using the positions
-        const filledLetters = positions.map(pos => grid[pos]);
+        const filledLetters = positions.map(pos => {
+          const letter = grid[pos];
+          console.log(`  Position ${pos}: "${letter || 'EMPTY'}"`);
+          return letter;
+        });
         
         // Check if this word is completely filled (no empty cells)
         const isComplete = !filledLetters.includes("");
@@ -1258,8 +1530,13 @@ const handleGameOver = () => {
         // Create the grid word by joining the letters
         const gridWord = filledLetters.join("");
         
-        // Skip validation for incomplete words
+        console.log(`Filled letters:`, filledLetters);
+        console.log(`Formed word: "${gridWord}"`);
+        console.log(`Is complete? ${isComplete}`);
+        
+        // IMPORTANT: Skip validation for incomplete words - they're automatically marked as incorrect
         if (!isComplete) {
+          console.log(`❌ Row ${i + 1}: Word "${word}" is INCOMPLETE (filled: "${gridWord}") - Marked as incorrect with 0 points`);
           wordResults.push({
             expected: word,
             filled: gridWord,
@@ -1268,23 +1545,29 @@ const handleGameOver = () => {
             length: word.length,
             isComplete: false
           });
-          continue;
+          continue; // Skip to next word without validating
         }
         
-        // Only validate complete words with the API
+        console.log(`✓ Row ${i + 1}: Word "${word}" is complete (filled: "${gridWord}") - Validating...`);
+        
+        // Validate with API - allowing valid words since 60-75% pre-filling reduces random chance
         let isWordValid = false;
         try {
-          // First try exact match with expected word (more reliable)
+          // First try exact match with expected word (bonus: faster)
           if (gridWord.toUpperCase() === word.toUpperCase()) {
             isWordValid = true;
+            console.log(`  ✅ Exact match: "${gridWord}" matches expected "${word}"`);
           } else {
-            // Fallback to API validation
+            // Then validate with API to allow alternative valid words
+            console.log(`  🔍 Word doesn't match expected, checking API for "${gridWord}"...`);
             isWordValid = await validateWordWithAPI(gridWord.toLowerCase());
+            console.log(`  ${isWordValid ? '✅' : '❌'} API validation for "${gridWord}": ${isWordValid ? "Valid English word" : "Invalid word"}`);
           }
         } catch (error) {
-          console.error(`API validation failed for "${gridWord}":`, error);
+          console.error(`  ❌ API validation failed for "${gridWord}":`, error);
           // Final fallback - exact match with expected word
           isWordValid = gridWord.toUpperCase() === word.toUpperCase();
+          console.log(`  Fallback to exact match: ${isWordValid}`);
         }
         
         // Calculate points if the word is valid
@@ -1303,6 +1586,9 @@ const handleGameOver = () => {
           }
           
           earnedPoints += wordPoints;
+          console.log(`  💰 Points earned: ${wordPoints} (Total so far: ${earnedPoints})`);
+        } else {
+          console.log(`  ❌ No points - word is invalid`);
         }
         
         wordResults.push({
@@ -1313,37 +1599,87 @@ const handleGameOver = () => {
           length: gridWord.length,
           isComplete: true
         });
+        
+        console.log(`--- End Row ${i + 1} ---\n`);
       }
+      
+      console.log("=== FINAL SUBMIT RESULTS ===");
+      console.log(`Correct words: ${correct}/${currentLevelWords.length}`);
+      console.log(`Total points earned: ${earnedPoints}`);
+      console.log("Word results:", wordResults);
+      console.log("============================");
       
       // Calculate statistics for reporting
       const completedWords = wordResults.filter(result => result.isComplete).length;
       const totalWords = currentLevelWords.length;
       
       // Update session score
-      const newSession = sessionScoreRef.current + earnedPoints;
-      sessionScoreRef.current = newSession;
-      setSessionScore(newSession);
+      const newSessionScore = sessionScoreRef.current + earnedPoints;
+      sessionScoreRef.current = newSessionScore;
+      setSessionScore(newSessionScore);
+      
+      console.log(`Current session score: ${newSessionScore}`);
+      
+      // Compare session score with highest score
+      if (newSessionScore > parseFloat(highestScoreRef.current)) {
+        console.log(`New highest score: ${newSessionScore} (old: ${highestScoreRef.current})`);
+        highestScoreRef.current = newSessionScore;
+        setHighestScore(newSessionScore);
+        
+        // Save the new highest score to database
+        try {
+          await updateUser(user?.telegram_id, { highest_score: newSessionScore });
+          console.log("Updated highest score in database:", newSessionScore);
+        } catch (error) {
+          console.error("Failed to update highest score:", error);
+        }
+      }
+      
+      // Update total TMS points
+      const TotalPoints = parseFloat(tmsPoints) + parseFloat(earnedPoints);
+      const newTotalPoints = TotalPoints.toFixed(2);
+      
+      console.log(`Updating TMS points: ${tmsPoints} + ${earnedPoints} = ${newTotalPoints}`);
+      
+      // Update TMS points in the database
+      try {
+        await updateUser(user?.telegram_id, { tms_points: newTotalPoints });
+        console.log("Database updated successfully with new tms_points:", newTotalPoints);
+      } catch (error) {
+        console.error("Failed to update user points:", error);
+      }
       
       // Show appropriate toast based on performance
+      // STRICT: ALL words must be completed AND correct to advance
       const allWordsCorrect = correct === totalWords && completedWords === totalWords && totalWords > 0 && correct > 0;
       
-      console.log('Word validation results:', {
-        correct,
-        totalWords,
-        completedWords,
-        allWordsCorrect,
-        wordResults
-      });
+      console.log("=== LEVEL COMPLETION CHECK (SUBMIT) ===");
+      console.log(`All words correct? ${allWordsCorrect}`);
+      console.log(`Correct: ${correct}, Completed: ${completedWords}, Total: ${totalWords}`);
+      console.log(`Condition breakdown:`);
+      console.log(`  - correct === totalWords? ${correct === totalWords} (${correct} === ${totalWords})`);
+      console.log(`  - completedWords === totalWords? ${completedWords === totalWords} (${completedWords} === ${totalWords})`);
+      console.log(`  - totalWords > 0? ${totalWords > 0}`);
+      console.log(`  - correct > 0? ${correct > 0}`);
+      console.log('Word validation results:', wordResults);
+      console.log("=======================================");
       
       if (allWordsCorrect) {
+        console.log("✅ Level complete - showing SUCCESS modal (ALLOWS advancement to next level)");
         setToastType("success");
         setToastMessage(`Perfect! Level ${level} complete!`);
-        setToastMessage2(`+${earnedPoints} Q points (Session: ${newSession})`);
+        setToastMessage2(`+${earnedPoints} TMS points (${newTotalPoints} total)`);
+        setToastMessage3(`Highest Level: ${highestLevelRef.current} | Session Score: ${newSessionScore} | Best Score: ${highestScoreRef.current}`);
       } else {
-        // Show continue options for incomplete levels
+        console.log("⚠️ Level NOT complete - showing CONTINUE OPTIONS modal (BLOCKS advancement)");
+        console.log(`  Player can only: (1) Watch ads for 30 more seconds, (2) Pay gems for 30 more seconds, or (3) Restart game`);
+        console.log(`  Player CANNOT advance to next level unless they complete all ${totalWords} words correctly`);
+        
+        // Show continue options for incomplete levels - DO NOT ADVANCE
         setToastType("continueOptions");
         setToastMessage("You didn't complete the level. Choose to continue:");
-        setToastMessage2(`Score: ${correct}/${totalWords} completed words correct | Session Score: ${newSession}`);
+        setToastMessage2(`Score: ${correct}/${totalWords} completed words correct`);
+        setToastMessage3(`Highest Level: ${highestLevelRef.current} | Session Score: ${newSessionScore} | Best Score: ${highestScoreRef.current}`);
       }
       
       setToastVisible(true);
@@ -1357,6 +1693,32 @@ const handleGameOver = () => {
   };
 
   const nextLevel = () => {
+    console.log("🎯 nextLevel() called - This should ONLY happen when all words are correct!");
+    
+    // SAFETY CHECK: Verify all rows are complete before advancing
+    // This prevents accidental level advancement
+    const allComplete = currentLevelWords.every(wordObj => {
+      const positions = wordObj.positions;
+      const filledLetters = positions.map(pos => grid[pos]);
+      const isComplete = !filledLetters.includes("");
+      const gridWord = filledLetters.join("");
+      const isCorrect = gridWord.toUpperCase() === wordObj.word.toUpperCase();
+      
+      console.log(`  Checking row: "${wordObj.word}" - Complete: ${isComplete}, Correct: ${isCorrect}`);
+      return isComplete && isCorrect;
+    });
+    
+    if (!allComplete) {
+      console.error("❌ CRITICAL: nextLevel() called but not all words are correct! Blocking advancement.");
+      console.error("Current grid:", grid);
+      console.error("Expected words:", currentLevelWords);
+      alert("Error: Cannot advance - not all words are correct!");
+      setToastVisible(false);
+      return; // Block level advancement
+    }
+    
+    console.log("✅ All words verified correct - advancing to next level");
+    
     setToastVisible(false);
     
     // Stop timer and reset ALL flags before advancing
@@ -1371,7 +1733,24 @@ const handleGameOver = () => {
     isSubmittingRef.current = false;
     timerStartedRef.current = false;
     
-    setLevel((prev) => prev + 1);
+    // Increment level
+    const newLevel = level + 1;
+    setLevel(newLevel);
+    
+    // Update highest level if needed
+    if (newLevel > highestLevelRef.current) {
+      highestLevelRef.current = newLevel;
+      setHighestLevel(newLevel);
+      
+      // Save the new highest level to database
+      try {
+        updateUser(user?.telegram_id, { highest_level: newLevel });
+        console.log("Updated highest level in database:", newLevel);
+      } catch (error) {
+        console.error("Failed to update highest level:", error);
+      }
+    }
+    
     setIsLoading(true);
     
     // Clear selections
@@ -3162,15 +3541,22 @@ const handleGameOver = () => {
         toastType={toastType}
         message={toastMessage}
         message2={toastMessage2}
+        message3={toastMessage3}
         onClose={() => {
+          console.log("🔘 Modal X button clicked - Toast Type:", toastType);
+          
           if (toastType === 'timeUp' || toastType === 'gameOver') {
+            console.log("  → Action: Restart game");
             restartGame();
           } else if (toastType === 'success') {
+            console.log("  → Action: Advance to next level");
             nextLevel();
           } else if (toastType === 'continueOptions') {
+            console.log("  → Action: Restart game (player chose to quit incomplete level)");
             // X button on continue options should restart game
             restartGame();
           } else {
+            console.log("  → Action: Close toast");
             closeToast();
           }
         }}

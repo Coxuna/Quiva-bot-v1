@@ -8,6 +8,7 @@ export default function GamePage() {
   const games = [
     { id: 1, name: "Jumble Jester", path: "/Game/Jumbo", img: "/assets/wordfind.svg" },
     { id: 2, name: "Scrabble", path: "/Game/Scrabble", img: "/assets/OO.png" },
+    { id:3, name: "Jester", path:"/Game/TestJumbo", img: "/assets/wordfind.svg"}
   ];
 
   return (

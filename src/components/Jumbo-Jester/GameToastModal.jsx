@@ -7,7 +7,8 @@ const GameToastModal = ({
   watchAds = false, 
   toastType, 
   message, 
-  message2 = "Keep playing to win more!", 
+  message2 = "Keep playing to win more!",
+  message3 = "",
   showOutOfSpins = false,
   onClose, 
   onWatchAd,
@@ -111,6 +112,11 @@ const GameToastModal = ({
           
                   {/* Secondary message */}
                   <span className="text-white mb-4" style={{ fontFamily: 'Poppins, sans-serif' }}>{message2}</span>
+                  
+                  {/* Tertiary message for scores */}
+                  {message3 && (
+                    <span className="text-yellow-300 mb-4 text-sm font-semibold" style={{ fontFamily: 'Poppins, sans-serif' }}>{message3}</span>
+                  )}
 
           {/* Image after text for watch ads and other modals */}
           {imageSrc && (
@@ -127,13 +133,13 @@ const GameToastModal = ({
                 onClick={onWatchAdToContinue}
                 className="bg-green-600 h-12 px-4 text-white font-bold shadow-[2px_10px_0px_0px_black] flex items-center justify-center gap-2 w-full hover:bg-green-700 transition-colors"
               >
-                <span style={{ fontFamily: 'Adventure, sans-serif' }}>Watch 3 Ads to Continue</span>
+                <span style={{ fontFamily: 'Adventure, sans-serif' }}>Watch 3 Ads (+15s)</span>
               </button>
               <button 
                 onClick={onDeductPointsToContinue}
                 className="bg-purple-600 h-12 px-4 text-white font-bold shadow-[2px_10px_0px_0px_black] flex items-center justify-center gap-2 w-full hover:bg-purple-700 transition-colors"
               >
-                <span style={{ fontFamily: 'Adventure, sans-serif' }}>Use 10 Gems to Continue</span>
+                <span style={{ fontFamily: 'Adventure, sans-serif' }}>Use 10 Gems (+15s)</span>
               </button>
               <button 
                 onClick={onRestartGame}
