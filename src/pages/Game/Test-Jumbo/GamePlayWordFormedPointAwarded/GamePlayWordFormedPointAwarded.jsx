@@ -1897,10 +1897,10 @@ const handleGameOver = () => {
                       WebkitTextStroke: "none"
                     }}
                   >
-                    {(user?.username || user?.first_name)?.charAt(0) || 'U'}
+                    {(user?.user_name || user?.first_name)?.charAt(0) || 'U'}
               </div>
             </div>
-            <span className="text-[10px] font-medium">{user?.username || user?.first_name || 'USER'}</span>
+            <span className="text-[10px] font-medium">{user?.user_name || user?.first_name || 'USER'}</span>
           </div>
           <div className="currency-display">
             <div className="currency-item" title="Q_points">
