@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Volume2, VolumeX, RotateCcw } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import "./GamePlayWordFormedPointAwarded.css";
 import { GameToastModal } from '../../../../components/Jumbo-Jester';
 import { useSoundManager } from '../../../../hooks/SoundManager';
@@ -162,6 +163,7 @@ export const fetchRandomThreeLetterWords = async (level = 1, usedWordsSet = new 
 };
 
 export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
+  const navigate = useNavigate();
   const [usedWords, setUsedWords] = useState(new Set());
   const [selectedLetter, setSelectedLetter] = useState(null);
   const [selectedGridPos, setSelectedGridPos] = useState(null); // {row, col}
@@ -1874,7 +1876,7 @@ const handleGameOver = () => {
       <div className="topmost-white-container">
         {/* Close Button Section */}
         <div className="close-button-section">
-          <button className="close-button">
+          <button className="close-button" onClick={() => navigate('/Game')}>
             <img src="/assets/x-black.png" alt="Close" width={20} height={20} />
           </button>
         </div>
@@ -1882,17 +1884,19 @@ const handleGameOver = () => {
         {/* Header */}
         <div className="header">
           <div className="user-profile">
-            <div className="shrink-0 w-8 h-[32.34px] relative">
+            <div className="shrink-0 w-8 h-[32.34px] relative user-avatar">
               <img
                 className="w-8 h-[32.34px] absolute left-0 top-0 overflow-visible"
                 src="/assets/na.png"
                 alt="Icon"
               />
                   <div
-                    className="text-center text-[17.2px] font-normal uppercase absolute left-[8.6px] top-[2.88px] w-[13.07px] h-[17.19px] text-black"
+                    className="text-center font-normal uppercase absolute text-black user-initial"
                     style={{ 
-                      transformOrigin: "0 0", 
-                      transform: "rotate(0deg) scale(1, 1)",
+                      left: '50%',
+                      top: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      fontSize: 'clamp(0.5rem, 53%, 17.2px)',
                       textShadow: "none",
                       WebkitTextStroke: "none"
                     }}
@@ -1904,30 +1908,21 @@ const handleGameOver = () => {
           </div>
           <div className="currency-display">
             <div className="currency-item" title="Q_points">
-              <div className="coin-icon">
-                <img src="/assets/token.png" alt="Q_points" width={20} height={20} />
-              </div>
+              <img src="/assets/token.png" alt="Q_points" width={20} height={20} />
               <span className="text-[#ffffff] text-left font-normal">{tmsPoints}</span>
             </div>
             <div className="currency-item" title="Gems">
-              <div className="diamond-icon">
-                <img src="/assets/diamond.png" alt="Gems" width={20} height={20} />
-              </div>
+              <img src="/assets/diamond.png" alt="Gems" width={20} height={20} />
               <span className="text-[#ffffff] text-left font-normal">{gems}</span>
             </div>
             <div className="currency-item" title="Level">
-              <div className="coin-icon">
-                <img src="/assets/cup.png" alt="Level" width={18} height={18} />
-              </div>
+              <img src="/assets/cup.png" alt="Level" width={18} height={18} />
               <span className="text-[#ffffff] text-left font-normal">{level}</span>
             </div>
             <div className="currency-item" title="Trials">
-              <div className="coin-icon">
-                <RotateCcw size={18} color="#ffffff" />
-              </div>
+              <RotateCcw size={18} color="#ffffff" />
               <span className="text-[#ffffff] text-left font-normal">
                 {availableTrials !== null ? availableTrials : '--'}
-                {trialCountdown && ` (${trialCountdown})`}
               </span>
             </div>
             <button
@@ -1943,7 +1938,7 @@ const handleGameOver = () => {
               }}
               className="currency-item"
               title={isMuted ? 'Unmute' : 'Mute'}
-              style={{ background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
+              style={{ background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', gap: '2px', padding: '0' }}
             >
               {isMuted ? (
                 <VolumeX size={18} color="#ffffff" />
@@ -2050,7 +2045,14 @@ const handleGameOver = () => {
             <div className="button-icon">
               <img src="/assets/hint.png" alt="Hint" width={50} height={50} />
         </div>
-            <span className="button-count text-[#ffffff] text-left font-normal">{hints !== null ? Math.min(hints, 3) : 0}/3{hintCountdown ? ` (${hintCountdown})` : ''}</span>
+            <span className="button-count text-[#ffffff] text-center font-normal">
+              {hints !== null ? Math.min(hints, 3) : 0}/3
+              {hintCountdown && (
+                <span style={{ display: 'block', fontSize: '0.7em', marginTop: '2px' }}>
+                  ({hintCountdown})
+                </span>
+              )}
+            </span>
         </div>
           
           <div className="action-buttons-row mb-0">
@@ -2058,7 +2060,14 @@ const handleGameOver = () => {
               <div className="button-icon">
                 <img src="/assets/shuffle.png" alt="Shuffle" width={50} height={50} />
         </div>
-              <span className="button-count text-[#ffffff] text-left font-normal">{shuffles !== null ? Math.min(shuffles, 3) : 0}/3{shuffleCountdown ? ` (${shuffleCountdown})` : ''}</span>
+              <span className="button-count text-[#ffffff] text-center font-normal">
+                {shuffles !== null ? Math.min(shuffles, 3) : 0}/3
+                {shuffleCountdown && (
+                  <span style={{ display: 'block', fontSize: '0.7em', marginTop: '2px' }}>
+                    ({shuffleCountdown})
+                  </span>
+                )}
+              </span>
       </div>
             
             <div
@@ -2704,108 +2713,108 @@ const handleGameOver = () => {
           }
         }
 
+        @media (min-height: 951px) and (max-height: 999px) {
+          .game-play-word-formed-point-awarded {
+            padding-top: 0;
+          }
+          .topmost-white-container {
+            margin-bottom: 1.15rem;
+            padding: 1.1rem;
+          }
+          .board-content {
+            width: 370px;
+            height: 290px;
+            padding: 19px;
+            gap: 10px;
+          }
+          
+          .corner-circle-top-left {
+            width: 22px;
+            height: 22px;
+            top: 6px;
+            left: 6px;
+          }
+          
+          .corner-circle-top-right {
+            width: 22px;
+            height: 22px;
+            top: 6px;
+            right: 6px;
+          }
+          
+          .corner-circle-bottom-left {
+            width: 22px;
+            height: 22px;
+            bottom: 6px;
+            left: 6px;
+          }
+          
+          .corner-circle-bottom-right {
+            width: 22px;
+            height: 22px;
+            bottom: 6px;
+            right: 6px;
+          }
+          
+          .letter-tile, .letter-slot {
+            width: 63px;
+            height: 63px;
+            font-size: 25px;
+          }
+          .timer-section {
+            margin: 1.15rem 8px;
+            padding: 1.1rem;
+          }
+          .letter-rack {
+            margin: 1.15rem;
+            padding: 1.1rem;
+            margin-bottom: 1.15rem;
+          }
+          .play-button-container {
+            margin: 1.15rem;
+            padding: 1.1rem;
+          }
+        }
+
         @media (min-height: 1000px) {
           .game-play-word-formed-point-awarded {
             padding-top: 0;
           }
           .topmost-white-container {
-            margin-bottom: 2.5rem;
-            padding: 2rem;
+            margin-bottom: 1.5rem;
+            padding: 1.3rem;
           }
           .board-content {
-            width: 500px;
-            height: 420px;
-            padding: 30px;
-            gap: 18px;
+            width: 420px;
+            height: 340px;
+            padding: 24px;
+            gap: 13px;
           }
           
           .corner-circle-top-left {
-            width: 28px;
-            height: 28px;
-            top: 10px;
-            left: 10px;
-          }
-          
-          .corner-circle-top-right {
-            width: 28px;
-            height: 28px;
-            top: 10px;
-            right: 10px;
-          }
-          
-          .corner-circle-bottom-left {
-            width: 28px;
-            height: 28px;
-            bottom: 10px;
-            left: 10px;
-          }
-          
-          .corner-circle-bottom-right {
-            width: 28px;
-            height: 28px;
-            bottom: 10px;
-            right: 10px;
-          }
-          
-          .letter-tile, .letter-slot {
-            width: 80px;
-            height: 80px;
-            font-size: 32px;
-          }
-          .timer-section {
-            margin: 2rem 8px;
-            padding: 2rem;
-          }
-          .letter-rack {
-            margin: 20px;
-            padding: 2rem;
-            margin-bottom: 20px;
-          }
-          .play-button-container {
-            margin: 20px;
-            padding: 2rem;
-          }
-        }
-
-        @media (min-height: 900px) {
-          .game-play-word-formed-point-awarded {
-            padding-top: 0;
-          }
-          .topmost-white-container {
-            margin-bottom: 2rem;
-            padding: 1.5rem;
-          }
-          .board-content {
-            width: 450px;
-            height: 380px;
-            padding: 25px;
-            gap: 15px;
-          }
-          
-          .corner-circle-top-left {
-            width: 26px;
-            height: 26px;
+            width: 25px;
+            height: 25px;
             top: 8px;
             left: 8px;
           }
           
           .corner-circle-top-right {
-            width: 26px;
-            height: 26px;
+            width: 25px;
+            height: 25px;
             top: 8px;
             right: 8px;
           }
           
           .corner-circle-bottom-left {
-            width: 26px;
-            height: 26px;
+            width: 25px;
+            height: 25px;
             bottom: 8px;
             left: 8px;
           }
           
           .corner-circle-bottom-right {
-            width: 26px;
-            height: 26px;
+            width: 25px;
+            height: 25px;
             bottom: 8px;
             right: 8px;
           }
@@ -2817,81 +2826,145 @@ const handleGameOver = () => {
           }
           .timer-section {
             margin: 1.5rem 8px;
-            padding: 1.5rem;
+            padding: 1.3rem;
           }
           .letter-rack {
-            margin: 15px;
-            padding: 1.5rem;
-            margin-bottom: 15px;
+            margin: 1.5rem;
+            padding: 1.3rem;
+            margin-bottom: 1.5rem;
           }
           .play-button-container {
-            margin: 15px;
-            padding: 1.5rem;
+            margin: 1.5rem;
+            padding: 1.3rem;
           }
         }
 
-        @media (min-height: 800px) {
+        @media (min-height: 901px) and (max-height: 920px) {
           .game-play-word-formed-point-awarded {
             padding-top: 0;
           }
           .topmost-white-container {
-            margin-bottom: 1.5rem;
-            padding: 1.25rem;
+            margin-bottom: 0.85rem;
+            padding: 0.95rem;
           }
           .board-content {
-            width: 400px;
-            height: 340px;
-            padding: 22px;
-            gap: 12px;
+            width: 350px;
+            height: 270px;
+            padding: 17px;
+            gap: 9px;
           }
           
           .corner-circle-top-left {
-            width: 24px;
-            height: 24px;
-            top: 7px;
-            left: 7px;
+            width: 21px;
+            height: 21px;
+            top: 5px;
+            left: 5px;
           }
           
           .corner-circle-top-right {
-            width: 24px;
-            height: 24px;
-            top: 7px;
-            right: 7px;
+            width: 21px;
+            height: 21px;
+            top: 5px;
+            right: 5px;
           }
           
           .corner-circle-bottom-left {
-            width: 24px;
-            height: 24px;
-            bottom: 7px;
-            left: 7px;
+            width: 21px;
+            height: 21px;
+            bottom: 5px;
+            left: 5px;
           }
           
           .corner-circle-bottom-right {
-            width: 24px;
-            height: 24px;
-            bottom: 7px;
-            right: 7px;
+            width: 21px;
+            height: 21px;
+            bottom: 5px;
+            right: 5px;
           }
           
           .letter-tile, .letter-slot {
-            width: 65px;
-            height: 65px;
-            font-size: 26px;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
           }
           .timer-section {
-            margin: 1.25rem 8px;
-            padding: 1.25rem;
+            margin: 0.85rem 8px;
+            padding: 0.95rem;
           }
           .letter-rack {
-            margin: 12px;
-            padding: 1.25rem;
-            margin-bottom: 12px;
+            margin: 0.85rem;
+            padding: 0.95rem;
+            margin-bottom: 0.85rem;
           }
           .play-button-container {
-            margin: 12px;
-            padding: 1.25rem;
+            margin: 0.85rem;
+            padding: 0.95rem;
           }
         }
+
+        @media (min-height: 921px) and (max-height: 950px) {
+          .game-play-word-formed-point-awarded {
+            padding-top: 0;
+          }
+          .topmost-white-container {
+            margin-bottom: 1rem;
+            padding: 1.05rem;
+          }
+          .board-content {
+            width: 370px;
+            height: 290px;
+            padding: 18px;
+            gap: 10px;
+          }
+          
+          .corner-circle-top-left {
+            width: 22px;
+            height: 22px;
+            top: 6px;
+            left: 6px;
+          }
+          
+          .corner-circle-top-right {
+            width: 22px;
+            height: 22px;
+            top: 6px;
+            right: 6px;
+          }
+          
+          .corner-circle-bottom-left {
+            width: 22px;
+            height: 22px;
+            bottom: 6px;
+            left: 6px;
+          }
+          
+          .corner-circle-bottom-right {
+            width: 22px;
+            height: 22px;
+            bottom: 6px;
+            right: 6px;
+          }
+          
+          .letter-tile, .letter-slot {
+            width: 63px;
+            height: 63px;
+            font-size: 25px;
+          }
+          .timer-section {
+            margin: 1rem 8px;
+            padding: 1.05rem;
+          }
+          .letter-rack {
+            margin: 1rem;
+            padding: 1.05rem;
+            margin-bottom: 1rem;
+          }
+          .play-button-container {
+            margin: 1rem;
+            padding: 1.05rem;
+          }
+        }
+
 
         @media (min-width: 540px) and (max-width: 540px) and (min-height: 720px) and (max-height: 720px) {
           .game-play-word-formed-point-awarded {
@@ -3002,6 +3075,82 @@ const handleGameOver = () => {
           }
         }
 
+        @media (min-height: 700px) and (max-height: 719px) {
+          .game-play-word-formed-point-awarded {
+            padding-top: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+          }
+          .topmost-white-container {
+            margin-bottom: 0.3rem;
+            padding: 0.55rem;
+            flex-shrink: 0;
+          }
+          .board-content {
+            width: 270px;
+            height: 190px;
+            padding: 11px;
+            gap: 5px;
+          }
+          
+          .corner-circle-top-left {
+            width: 15px;
+            height: 15px;
+            top: 3px;
+            left: 3px;
+          }
+          
+          .corner-circle-top-right {
+            width: 15px;
+            height: 15px;
+            top: 3px;
+            right: 3px;
+          }
+          
+          .corner-circle-bottom-left {
+            width: 15px;
+            height: 15px;
+            bottom: 3px;
+            left: 3px;
+          }
+          
+          .corner-circle-bottom-right {
+            width: 15px;
+            height: 15px;
+            bottom: 3px;
+            right: 3px;
+          }
+          
+          .letter-tile, .letter-slot {
+            width: 46px;
+            height: 46px;
+            font-size: 19px;
+          }
+          .timer-section {
+            margin: 0.3rem 8px;
+            padding: 0.55rem;
+            flex-shrink: 0;
+          }
+          .letter-rack {
+            margin: 0.3rem;
+            padding: 0.55rem;
+            margin-bottom: 0.3rem;
+            flex-shrink: 0;
+          }
+          .play-button-container {
+            margin: 0.3rem;
+            padding: 0.55rem;
+            flex-shrink: 0;
+          }
+          .play-button {
+            min-width: 165px;
+            min-height: 36px;
+            font-size: 14px;
+          }
+        }
+
         @media (min-height: 720px) and (max-height: 750px) {
           .game-play-word-formed-point-awarded {
             padding-top: 0;
@@ -3078,126 +3227,457 @@ const handleGameOver = () => {
           }
         }
 
-        @media (min-height: 700px) {
+        @media (min-height: 751px) and (max-height: 780px) {
+          .game-play-word-formed-point-awarded {
+            padding-top: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+          }
+          .topmost-white-container {
+            margin-bottom: 0.4rem;
+            padding: 0.6rem;
+            flex-shrink: 0;
+          }
+          .board-content {
+            width: 300px;
+            height: 220px;
+            padding: 14px;
+            gap: 7px;
+          }
+          
+          .corner-circle-top-left {
+            width: 18px;
+            height: 18px;
+            top: 4px;
+            left: 4px;
+          }
+          
+          .corner-circle-top-right {
+            width: 18px;
+            height: 18px;
+            top: 4px;
+            right: 4px;
+          }
+          
+          .corner-circle-bottom-left {
+            width: 18px;
+            height: 18px;
+            bottom: 4px;
+            left: 4px;
+          }
+          
+          .corner-circle-bottom-right {
+            width: 18px;
+            height: 18px;
+            bottom: 4px;
+            right: 4px;
+          }
+          
+          .letter-tile, .letter-slot {
+            width: 52px;
+            height: 52px;
+            font-size: 22px;
+          }
+          .timer-section {
+            margin: 0.4rem 8px;
+            padding: 0.6rem;
+            flex-shrink: 0;
+          }
+          .letter-rack {
+            margin: 0.4rem;
+            padding: 0.6rem;
+            margin-bottom: 0.4rem;
+            flex-shrink: 0;
+          }
+          .play-button-container {
+            margin: 0.4rem;
+            padding: 0.6rem;
+            flex-shrink: 0;
+          }
+          .play-button {
+            min-width: 170px;
+            min-height: 38px;
+            font-size: 14px;
+          }
+        }
+
+        @media (min-height: 781px) and (max-height: 789px) {
           .game-play-word-formed-point-awarded {
             padding-top: 0;
           }
           .topmost-white-container {
-            margin-bottom: 1rem;
-            padding: 1rem;
+            margin-bottom: 0.5rem;
+            padding: 0.65rem;
           }
           .board-content {
-            width: 350px;
-            height: 300px;
-            padding: 20px;
-            gap: 10px;
+            width: 310px;
+            height: 230px;
+            padding: 15px;
+            gap: 7px;
           }
           
           .corner-circle-top-left {
-            width: 22px;
-            height: 22px;
-            top: 6px;
-            left: 6px;
+            width: 19px;
+            height: 19px;
+            top: 4px;
+            left: 4px;
           }
           
           .corner-circle-top-right {
-            width: 22px;
-            height: 22px;
-            top: 6px;
-            right: 6px;
+            width: 19px;
+            height: 19px;
+            top: 4px;
+            right: 4px;
           }
           
           .corner-circle-bottom-left {
-            width: 22px;
-            height: 22px;
-            bottom: 6px;
-            left: 6px;
+            width: 19px;
+            height: 19px;
+            bottom: 4px;
+            left: 4px;
           }
           
           .corner-circle-bottom-right {
-            width: 22px;
-            height: 22px;
-            bottom: 6px;
-            right: 6px;
+            width: 19px;
+            height: 19px;
+            bottom: 4px;
+            right: 4px;
           }
           
           .letter-tile, .letter-slot {
-            width: 60px;
-            height: 60px;
-            font-size: 24px;
+            width: 53px;
+            height: 53px;
+            font-size: 22px;
           }
           .timer-section {
-            margin: 1rem 8px;
-            padding: 1rem;
+            margin: 0.5rem 8px;
+            padding: 0.65rem;
           }
           .letter-rack {
-            margin: 10px;
-            padding: 1rem;
-            margin-bottom: 10px;
+            margin: 0.5rem;
+            padding: 0.65rem;
+            margin-bottom: 0.5rem;
           }
           .play-button-container {
-            margin: 10px;
-            padding: 1rem;
+            margin: 0.5rem;
+            padding: 0.65rem;
           }
         }
 
-        @media (min-height: 701px) and (max-height: 750px) {
-          .board-content {
-            width: 220px;
-            height: 160px;
+        @media (min-height: 790px) and (max-height: 810px) {
+          .game-play-word-formed-point-awarded {
+            padding-top: 0;
+          }
+          .topmost-white-container {
+            margin-bottom: 0.5rem;
             padding: 0.65rem;
-            gap: 0.32rem;
+          }
+          .board-content {
+            width: 300px;
+            height: 220px;
+            padding: 14px;
+            gap: 7px;
           }
           
           .corner-circle-top-left {
-            width: 16px;
-            height: 16px;
-            top: 3px;
-            left: 3px;
+            width: 18px;
+            height: 18px;
+            top: 4px;
+            left: 4px;
           }
           
           .corner-circle-top-right {
-            width: 16px;
-            height: 16px;
-            top: 3px;
-            right: 3px;
+            width: 18px;
+            height: 18px;
+            top: 4px;
+            right: 4px;
           }
           
           .corner-circle-bottom-left {
-            width: 16px;
-            height: 16px;
-            bottom: 3px;
-            left: 3px;
+            width: 18px;
+            height: 18px;
+            bottom: 4px;
+            left: 4px;
           }
           
           .corner-circle-bottom-right {
-            width: 16px;
-            height: 16px;
-            bottom: 3px;
-            right: 3px;
+            width: 18px;
+            height: 18px;
+            bottom: 4px;
+            right: 4px;
           }
           
           .letter-tile, .letter-slot {
-            width: 1.95rem;
-            height: 1.95rem;
-            font-size: 1rem;
+            width: 50px;
+            height: 50px;
+            font-size: 21px;
           }
           .timer-section {
-            margin: 0.5rem 0.4rem;
+            margin: 0.5rem 8px;
             padding: 0.65rem;
           }
           .letter-rack {
-            margin: 0.4rem;
+            margin: 0.5rem;
             padding: 0.65rem;
-            margin-bottom: 0.4rem;
+            margin-bottom: 0.5rem;
           }
           .play-button-container {
-            margin: 0.4rem;
-            padding: 0.4rem;
+            margin: 0.5rem;
+            padding: 0.65rem;
           }
-          .play-button img {
-            width: 180px !important;
-            height: 40px !important;
+        }
+
+        @media (min-height: 811px) and (max-height: 820px) {
+          .game-play-word-formed-point-awarded {
+            padding-top: 0;
+          }
+          .topmost-white-container {
+            margin-bottom: 0.6rem;
+            padding: 0.75rem;
+          }
+          .board-content {
+            width: 320px;
+            height: 240px;
+            padding: 15px;
+            gap: 8px;
+          }
+          
+          .corner-circle-top-left {
+            width: 19px;
+            height: 19px;
+            top: 5px;
+            left: 5px;
+          }
+          
+          .corner-circle-top-right {
+            width: 19px;
+            height: 19px;
+            top: 5px;
+            right: 5px;
+          }
+          
+          .corner-circle-bottom-left {
+            width: 19px;
+            height: 19px;
+            bottom: 5px;
+            left: 5px;
+          }
+          
+          .corner-circle-bottom-right {
+            width: 19px;
+            height: 19px;
+            bottom: 5px;
+            right: 5px;
+          }
+          
+          .letter-tile, .letter-slot {
+            width: 54px;
+            height: 54px;
+            font-size: 22px;
+          }
+          .timer-section {
+            margin: 0.6rem 8px;
+            padding: 0.75rem;
+          }
+          .letter-rack {
+            margin: 0.6rem;
+            padding: 0.75rem;
+            margin-bottom: 0.6rem;
+          }
+          .play-button-container {
+            margin: 0.6rem;
+            padding: 0.75rem;
+          }
+        }
+
+        @media (min-height: 821px) and (max-height: 839px) {
+          .game-play-word-formed-point-awarded {
+            padding-top: 0;
+          }
+          .topmost-white-container {
+            margin-bottom: 0.65rem;
+            padding: 0.8rem;
+          }
+          .board-content {
+            width: 330px;
+            height: 250px;
+            padding: 16px;
+            gap: 8px;
+          }
+          
+          .corner-circle-top-left {
+            width: 20px;
+            height: 20px;
+            top: 5px;
+            left: 5px;
+          }
+          
+          .corner-circle-top-right {
+            width: 20px;
+            height: 20px;
+            top: 5px;
+            right: 5px;
+          }
+          
+          .corner-circle-bottom-left {
+            width: 20px;
+            height: 20px;
+            bottom: 5px;
+            left: 5px;
+          }
+          
+          .corner-circle-bottom-right {
+            width: 20px;
+            height: 20px;
+            bottom: 5px;
+            right: 5px;
+          }
+          
+          .letter-tile, .letter-slot {
+            width: 56px;
+            height: 56px;
+            font-size: 23px;
+          }
+          .timer-section {
+            margin: 0.65rem 8px;
+            padding: 0.8rem;
+          }
+          .letter-rack {
+            margin: 0.65rem;
+            padding: 0.8rem;
+            margin-bottom: 0.65rem;
+          }
+          .play-button-container {
+            margin: 0.65rem;
+            padding: 0.8rem;
+          }
+        }
+
+        @media (min-height: 840px) and (max-height: 880px) {
+          .game-play-word-formed-point-awarded {
+            padding-top: 0;
+          }
+          .topmost-white-container {
+            margin-bottom: 0.6rem;
+            padding: 0.75rem;
+          }
+          .board-content {
+            width: 310px;
+            height: 230px;
+            padding: 14px;
+            gap: 7px;
+          }
+          
+          .corner-circle-top-left {
+            width: 19px;
+            height: 19px;
+            top: 4px;
+            left: 4px;
+          }
+          
+          .corner-circle-top-right {
+            width: 19px;
+            height: 19px;
+            top: 4px;
+            right: 4px;
+          }
+          
+          .corner-circle-bottom-left {
+            width: 19px;
+            height: 19px;
+            bottom: 4px;
+            left: 4px;
+          }
+          
+          .corner-circle-bottom-right {
+            width: 19px;
+            height: 19px;
+            bottom: 4px;
+            right: 4px;
+          }
+          
+          .letter-tile, .letter-slot {
+            width: 52px;
+            height: 52px;
+            font-size: 22px;
+          }
+          .timer-section {
+            margin: 0.6rem 8px;
+            padding: 0.75rem;
+          }
+          .letter-rack {
+            margin: 0.6rem;
+            padding: 0.75rem;
+            margin-bottom: 0.6rem;
+          }
+          .play-button-container {
+            margin: 0.6rem;
+            padding: 0.75rem;
+          }
+        }
+
+        @media (min-height: 881px) and (max-height: 900px) {
+          .game-play-word-formed-point-awarded {
+            padding-top: 0;
+          }
+          .topmost-white-container {
+            margin-bottom: 0.7rem;
+            padding: 0.8rem;
+          }
+          .board-content {
+            width: 330px;
+            height: 250px;
+            padding: 15px;
+            gap: 8px;
+          }
+          
+          .corner-circle-top-left {
+            width: 20px;
+            height: 20px;
+            top: 5px;
+            left: 5px;
+          }
+          
+          .corner-circle-top-right {
+            width: 20px;
+            height: 20px;
+            top: 5px;
+            right: 5px;
+          }
+          
+          .corner-circle-bottom-left {
+            width: 20px;
+            height: 20px;
+            bottom: 5px;
+            left: 5px;
+          }
+          
+          .corner-circle-bottom-right {
+            width: 20px;
+            height: 20px;
+            bottom: 5px;
+            right: 5px;
+          }
+          
+          .letter-tile, .letter-slot {
+            width: 56px;
+            height: 56px;
+            font-size: 23px;
+          }
+          .timer-section {
+            margin: 0.7rem 8px;
+            padding: 0.8rem;
+          }
+          .letter-rack {
+            margin: 0.7rem;
+            padding: 0.8rem;
+            margin-bottom: 0.7rem;
+          }
+          .play-button-container {
+            margin: 0.7rem;
+            padding: 0.8rem;
           }
         }
 
@@ -3501,45 +3981,85 @@ const handleGameOver = () => {
           }
         }
 
-        @media (max-width: 360px) {
-          .header {
-            padding: 0.375rem 0.5rem;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            justify-content: space-between;
-          }
-          
-          .user-profile {
-            gap: 0.25rem;
-            flex-shrink: 0;
-          }
-          
-          .user-profile .shrink-0 {
-            width: 1.5rem;
-            height: 1.5rem;
-          }
-          
-          .user-profile .shrink-0 img {
-            width: 1.5rem;
-            height: 1.5rem;
-          }
-          
-          .user-profile span {
-            font-size: 0.5625rem;
-            white-space: nowrap;
-          }
-          
+        @media (min-width: 300px) and (max-width: 380px) {
           .currency-display {
-            gap: 0.375rem;
-            flex-wrap: wrap;
+            gap: 0.1rem;
+            flex-wrap: nowrap !important;
             justify-content: flex-end;
+            width: auto;
           }
           
           .currency-item {
-            gap: 0.125rem;
-            padding: 0.125rem 0.1875rem;
-            min-width: fit-content;
-            flex-shrink: 0;
+            gap: 0.05rem;
+            padding: 0.08rem 0.1rem;
+            min-width: auto;
+          }
+          
+          .currency-item img {
+            width: 11px;
+            height: 11px;
+          }
+          
+          .currency-item span {
+            font-size: 0.48rem;
+            white-space: nowrap;
+          }
+        }
+
+        @media (min-width: 381px) and (max-width: 430px) {
+          .currency-display {
+            gap: 0.12rem;
+            flex-wrap: nowrap !important;
+            width: auto;
+          }
+          
+          .currency-item {
+            gap: 0.06rem;
+            padding: 0.09rem 0.12rem;
+          }
+          
+          .currency-item img {
+            width: 12px;
+            height: 12px;
+          }
+          
+          .currency-item span {
+            font-size: 0.52rem;
+          }
+        }
+
+        @media (min-width: 431px) and (max-width: 480px) {
+          .currency-display {
+            gap: 0.15rem;
+            flex-wrap: nowrap !important;
+            width: auto;
+          }
+          
+          .currency-item {
+            gap: 0.08rem;
+            padding: 0.1rem 0.15rem;
+          }
+          
+          .currency-item img {
+            width: 13px;
+            height: 13px;
+          }
+          
+          .currency-item span {
+            font-size: 0.55rem;
+          }
+        }
+
+        @media (min-width: 481px) and (max-width: 540px) {
+          .currency-display {
+            gap: 0.18rem;
+            flex-wrap: nowrap !important;
+            width: auto;
+          }
+          
+          .currency-item {
+            gap: 0.1rem;
+            padding: 0.12rem 0.18rem;
           }
           
           .currency-item img {
@@ -3548,7 +4068,147 @@ const handleGameOver = () => {
           }
           
           .currency-item span {
-            font-size: 0.5625rem;
+            font-size: 0.58rem;
+          }
+        }
+
+        @media (min-width: 541px) and (max-width: 600px) {
+          .currency-display {
+            gap: 0.25rem;
+            flex-wrap: nowrap !important;
+            width: auto;
+          }
+          
+          .currency-item {
+            gap: 0.12rem;
+            padding: 0.15rem 0.22rem;
+          }
+          
+          .currency-item img {
+            width: 15px;
+            height: 15px;
+          }
+          
+          .currency-item span {
+            font-size: 0.6rem;
+          }
+        }
+
+        @media (min-width: 601px) and (max-width: 699px) {
+          .currency-display {
+            gap: 0.3rem;
+            flex-wrap: nowrap !important;
+            width: auto;
+          }
+          
+          .currency-item {
+            gap: 0.15rem;
+            padding: 0.18rem 0.25rem;
+          }
+          
+          .currency-item img {
+            width: 16px;
+            height: 16px;
+          }
+          
+          .currency-item span {
+            font-size: 0.63rem;
+          }
+        }
+
+        @media (min-width: 700px) and (max-width: 800px) {
+          .currency-display {
+            gap: 0.4rem;
+            flex-wrap: nowrap !important;
+            width: auto;
+          }
+          
+          .currency-item {
+            gap: 0.18rem;
+            padding: 0.2rem 0.28rem;
+          }
+          
+          .currency-item img {
+            width: 18px;
+            height: 18px;
+          }
+          
+          .currency-item span {
+            font-size: 0.68rem;
+          }
+        }
+
+        @media (min-width: 801px) {
+          .currency-display {
+            gap: 0.5rem;
+            flex-wrap: nowrap !important;
+            width: auto;
+          }
+          
+          .currency-item {
+            gap: 0.25rem;
+            padding: 0.25rem 0.35rem;
+          }
+          
+          .currency-item img {
+            width: 20px;
+            height: 20px;
+          }
+          
+          .currency-item span {
+            font-size: 0.75rem;
+          }
+        }
+
+        @media (max-width: 360px) {
+          .header {
+            padding: 0.3rem 0.4rem;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+            justify-content: space-between;
+          }
+          
+          .user-profile {
+            gap: 0.2rem;
+            flex-shrink: 0;
+          }
+          
+          .user-profile .shrink-0 {
+            width: 1.3rem;
+            height: 1.3rem;
+          }
+          
+          .user-profile .shrink-0 img {
+            width: 1.3rem;
+            height: 1.3rem;
+          }
+          
+          .user-profile span {
+            font-size: 0.5rem;
+            white-space: nowrap;
+          }
+          
+          .currency-display {
+            gap: 0.08rem;
+            flex-wrap: nowrap !important;
+            justify-content: flex-end;
+            width: auto;
+          }
+          
+          .currency-item {
+            gap: 0.04rem;
+            padding: 0.06rem 0.08rem;
+            min-width: auto;
+            flex-shrink: 0;
+          }
+          
+          .currency-item img {
+            width: 10px;
+            height: 10px;
+          }
+          
+          .currency-item span {
+            font-size: 0.45rem;
             white-space: nowrap;
           }
           
@@ -3563,47 +4223,49 @@ const handleGameOver = () => {
 
         @media (max-width: 480px) {
           .header {
-            padding: 0.5rem 0.75rem;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-          }
-          
-          .user-profile {
-            gap: 0.25rem;
-          }
-          
-          .user-profile .shrink-0 {
-            width: 1.75rem;
-            height: 1.75rem;
-          }
-          
-          .user-profile .shrink-0 img {
-            width: 1.75rem;
-            height: 1.75rem;
-          }
-          
-          .user-profile span {
-            font-size: 0.625rem;
-          }
-          
-          .currency-display {
+            padding: 0.4rem 0.6rem;
             gap: 0.5rem;
             flex-wrap: wrap;
           }
           
+          .user-profile {
+            gap: 0.2rem;
+          }
+          
+          .user-profile .shrink-0 {
+            width: 1.5rem;
+            height: 1.5rem;
+          }
+          
+          .user-profile .shrink-0 img {
+            width: 1.5rem;
+            height: 1.5rem;
+          }
+          
+          .user-profile span {
+            font-size: 0.55rem;
+          }
+          
+          .currency-display {
+            gap: 0.2rem;
+            flex-wrap: nowrap !important;
+            width: auto;
+          }
+          
           .currency-item {
-            gap: 0.125rem;
-            padding: 0.125rem 0.25rem;
-            min-width: fit-content;
+            gap: 0.1rem;
+            padding: 0.1rem 0.18rem;
+            min-width: auto;
           }
           
           .currency-item img {
-            width: 16px;
-            height: 16px;
+            width: 13px;
+            height: 13px;
           }
           
           .currency-item span {
-            font-size: 0.625rem;
+            font-size: 0.55rem;
+            white-space: nowrap;
           }
           
           .action-buttons-row {

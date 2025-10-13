@@ -57,31 +57,50 @@
   min-width: 0;
 }
 
-
-.currency-display {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  background: #18325B;
-  padding: 8px 12px;
-  border: 3px solid black;
-  border-radius: 0;
-  margin-left: auto; /* push to right */
-  flex: 0 1 45%; /* allow shrink, limit width */
-  max-width: 45%;
-  justify-content: flex-end; /* content to far right inside */
-  white-space: nowrap;
-  min-width: 0;
-}
-
-/* Make currency items shrink gracefully */
-.currency-item { flex: 0 1 auto; min-width: 0; }
-
-.coin-icon, .diamond-icon {
+.user-avatar {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
+.user-initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1;
+}
+
+
+.currency-display {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: #18325B;
+  padding: 6px 8px;
+  border: 3px solid black;
+  border-radius: 0;
+  margin-left: auto; /* push to right */
+  flex: 0 0 auto; /* don't grow, don't shrink, auto width based on content */
+  max-width: none; /* remove width constraint */
+  justify-content: flex-end; /* content to far right inside */
+  white-space: nowrap;
+  flex-wrap: nowrap !important;
+}
+
+/* Make currency items shrink gracefully */
+.currency-item { 
+  flex: 0 0 auto; 
+  min-width: 0; 
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  white-space: nowrap;
+}
+
+/* Removed coin-icon and diamond-icon - now directly using img elements */
 
 /* Topmost White Container */
 .topmost-white-container {
@@ -424,7 +443,7 @@
   flex-direction: column;
   align-items: center;
   gap: 2px; /* Reduced gap */
-  min-height: 50px; /* Reduced height */
+  min-height: 70px; /* Increased to accommodate countdown on second line */
   justify-content: flex-start;
   overflow: visible;
   padding-bottom: 0; /* Remove extra padding */
@@ -452,11 +471,15 @@
   color: white;
   font-size: 14px;
   font-weight: 700;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
   text-align: center;
-  white-space: nowrap;
-  min-height: 18px;
+  white-space: normal; /* Allow wrapping to second line */
+  min-height: 36px; /* Reserve space for countdown line */
   line-height: 1.2;
+  width: 100%;
 }
 
 /* Letter Rack */
@@ -621,7 +644,7 @@
   
   .button-count, .button-text {
     font-size: 13px;
-    min-height: 16px;
+    min-height: 34px;
   }
   
   /* Timer section, letter rack, play button - spacing controlled by Tailwind */
@@ -695,7 +718,7 @@
   
   .button-count, .button-text {
     font-size: 11px;
-    min-height: 14px;
+    min-height: 32px;
     font-weight: 600;
   }
   
@@ -728,14 +751,16 @@
 
   /* Compact currency on one line */
   .currency-display {
-    gap: 6px;
+    gap: 5px;
     padding: 4px 6px;
     white-space: nowrap;
-    transform: scale(0.92);
-    transform-origin: right center;
+    flex-wrap: nowrap !important;
+    flex: 0 0 auto;
+    max-width: none;
   }
-  .currency-item span { font-size: 0.625rem; }
-  .currency-item img { width: 16px; height: 16px; }
+  .currency-item { gap: 0.1rem; padding: 0.08rem 0.12rem; }
+  .currency-item span { font-size: 0.6rem; }
+  .currency-item img { width: 15px; height: 15px; }
 
   /* Ensure currency container stays inline and doesn't wrap to next line */
   .currency-display {
@@ -743,6 +768,11 @@
   }
   .currency-item {
     display: inline-flex !important;
+  }
+  
+  /* User avatar initial positioning for small screens */
+  .user-initial {
+    font-size: 0.6rem !important;
   }
 }
 
@@ -769,24 +799,26 @@
   
   .button-count, .button-text {
     font-size: 10px;
-    min-height: 12px;
+    min-height: 30px;
     font-weight: 600;
   }
 
   /* Extra compact header for ultra small widths */
   .header {
     flex-wrap: nowrap;
-    gap: 4px;
+    gap: 3px;
   }
   .currency-display {
-    gap: 4px;
-    padding: 2px 4px;
+    gap: 2px;
+    padding: 2px 3px;
     white-space: nowrap;
-    transform: scale(0.85);
-    transform-origin: right center;
+    flex-wrap: nowrap !important;
+    flex: 0 0 auto;
+    max-width: none;
   }
-  .currency-item span { font-size: 0.5625rem; }
-  .currency-item img { width: 14px; height: 14px; }
+  .currency-item { gap: 0.04rem; padding: 0.04rem 0.06rem; }
+  .currency-item span { font-size: 0.5rem; }
+  .currency-item img { width: 11px; height: 11px; }
 
   /* Extra-tight inline behavior for ultra small widths */
   .currency-display {
@@ -794,6 +826,11 @@
   }
   .currency-item {
     display: inline-flex !important;
+  }
+  
+  /* User avatar initial positioning for ultra small screens */
+  .user-initial {
+    font-size: 0.52rem !important;
   }
 }
 
@@ -1243,6 +1280,9 @@
     width: 1.25rem;
     height: 1.25rem;
   }
+  .user-initial {
+    font-size: 0.55rem !important;
+  }
 }
 
 /* Specific height: 844px */
@@ -1314,6 +1354,9 @@
   .user-profile .shrink-0 img {
     width: 1.25rem;
     height: 1.25rem;
+  }
+  .user-initial {
+    font-size: 0.55rem !important;
   }
 }
 
@@ -1459,6 +1502,9 @@
     width: 1rem;
     height: 1rem;
   }
+  .user-initial {
+    font-size: 0.48rem !important;
+  }
 }
 
 @media (max-height: 499px) {
@@ -1524,90 +1570,87 @@
 }
 
 @media (min-width: 769px) and (max-width: 991px) {
-  .currency-display { flex-basis: 45%; max-width: 45%; gap: 10px; padding: 6px 10px; }
+  .currency-display { flex: 0 0 auto; max-width: none; gap: 10px; padding: 6px 10px; }
 }
 
 @media (min-width: 992px) and (max-width: 1199px) {
-  .currency-display { flex-basis: 40%; max-width: 40%; gap: 10px; padding: 6px 10px; }
+  .currency-display { flex: 0 0 auto; max-width: none; gap: 10px; padding: 6px 10px; }
 }
 
 @media (min-width: 1200px) {
-  .currency-display { flex-basis: 35%; max-width: 35%; gap: 10px; padding: 6px 10px; }
+  .currency-display { flex: 0 0 auto; max-width: none; gap: 10px; padding: 6px 10px; }
 }
 
 /* 451px to 500px */
 @media (max-width: 500px) and (min-width: 451px) {
-  .header { flex-wrap: nowrap; justify-content: space-between; gap: 8px; }
+  .header { flex-wrap: nowrap; justify-content: space-between; gap: 6px; }
   .user-profile { flex: 0 0 auto; min-width: 0; }
   .currency-display {
     margin-left: auto;
-    flex: 1 1 55%;
-    max-width: 55%;
-    gap: 8px;
-    padding: 6px 8px;
+    flex: 0 0 auto;
+    max-width: none;
+    gap: 6px;
+    padding: 5px 7px;
     white-space: nowrap;
-    transform: scale(0.95);
-    transform-origin: right center;
+    flex-wrap: nowrap !important;
   }
-  .currency-item span { font-size: 0.7rem; }
-  .currency-item img { width: 18px; height: 18px; }
+  .currency-item { gap: 0.12rem; padding: 0.1rem 0.15rem; }
+  .currency-item span { font-size: 0.62rem; }
+  .currency-item img { width: 16px; height: 16px; }
 }
 
 /* 401px to 450px */
 @media (max-width: 450px) and (min-width: 401px) {
-  .header { flex-wrap: nowrap; justify-content: space-between; gap: 6px; }
+  .header { flex-wrap: nowrap; justify-content: space-between; gap: 5px; }
   .user-profile { flex: 0 0 auto; min-width: 0; }
   .currency-display {
     margin-left: auto;
-    flex: 1 1 62%;
-    max-width: 62%;
+    flex: 0 0 auto;
+    max-width: none;
     gap: 4px;
-    padding: 3px 5px;
-    white-space: nowrap;
-    flex-wrap: nowrap;
-    overflow: hidden;
-    transform: scale(0.88);
-    transform-origin: right center;
-  }
-  .currency-item { flex: 0 1 auto; min-width: 0; }
-  .currency-item span { font-size: 0.6rem; }
-  .currency-item img { width: 15px; height: 15px; }
-}
-
-/* Narrow phones: 401px down to 361px */
-@media (max-width: 400px) and (min-width: 361px) {
-  .header { flex-wrap: nowrap; justify-content: space-between; gap: 6px; }
-  .user-profile { flex: 0 0 auto; min-width: 0; }
-  .currency-display {
-    margin-left: auto;
-    flex: 1 1 65%;
-    max-width: 65%;
-    gap: 6px;
     padding: 4px 6px;
     white-space: nowrap;
-    transform: scale(0.9);
-    transform-origin: right center;
+    flex-wrap: nowrap !important;
   }
-  .currency-item span { font-size: 0.625rem; }
-  .currency-item img { width: 16px; height: 16px; }
+  .currency-item { flex: 0 0 auto; min-width: 0; gap: 0.1rem; padding: 0.08rem 0.12rem; }
+  .currency-item span { font-size: 0.58rem; }
+  .currency-item img { width: 14px; height: 14px; }
 }
 
-/* Ultra narrow: 360px and below (~300–360px) */
-@media (max-width: 360px) {
+/* Narrow phones: 361px to 400px */
+@media (max-width: 400px) and (min-width: 361px) {
   .header { flex-wrap: nowrap; justify-content: space-between; gap: 4px; }
   .user-profile { flex: 0 0 auto; min-width: 0; }
   .currency-display {
     margin-left: auto;
-    flex: 1 1 72%;
-    max-width: 72%;
-    gap: 4px;
+    flex: 0 0 auto;
+    max-width: none;
+    gap: 3px;
+    padding: 3px 5px;
+    white-space: nowrap;
+    flex-wrap: nowrap !important;
+  }
+  .currency-item { gap: 0.08rem; padding: 0.06rem 0.1rem; }
+  .currency-item span { font-size: 0.55rem; }
+  .currency-item img { width: 13px; height: 13px; }
+}
+
+/* Ultra narrow: 360px and below (~300–360px) */
+@media (max-width: 360px) {
+  .header { flex-wrap: nowrap; justify-content: space-between; gap: 3px; }
+  .user-profile { flex: 0 0 auto; min-width: 0; }
+  .currency-display {
+    margin-left: auto;
+    flex: 0 0 auto;
+    max-width: none;
+    gap: 2px;
     padding: 2px 4px;
     white-space: nowrap;
-    transform: scale(0.85);
-    transform-origin: right center;
+    flex-wrap: nowrap !important;
   }
-  .currency-item span { font-size: 0.5625rem; }
-  .currency-item img { width: 14px; height: 14px; }
+  .currency-item { gap: 0.05rem; padding: 0.05rem 0.08rem; }
+  .currency-item span { font-size: 0.5rem; }
+  .currency-item img { width: 12px; height: 12px; }
 }
 
 /* Ensure game board always fits its grid rows and avoids spilling */
