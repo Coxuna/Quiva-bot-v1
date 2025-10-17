@@ -348,7 +348,8 @@
 /* Timer Section */
 .timer-section {
   background: transparent;
-  margin: 0 auto; /* Remove default margin - use Tailwind */
+  margin-left: auto; /* Center horizontally - allow Tailwind for vertical */
+  margin-right: auto; /* Center horizontally - allow Tailwind for vertical */
   border-radius: 16px;
   padding: 0; /* Remove default padding - use Tailwind */
   position: relative;
@@ -409,7 +410,7 @@
 .action-buttons {
   display: flex;
   flex-direction: column;
-  gap: 28px; /* Significantly increased gap between hint and shuffle/ads row */
+  gap: 12px; /* Reduced gap between hint and shuffle/ads row */
   position: relative;
   z-index: 2;
   align-items: flex-start;
@@ -443,7 +444,7 @@
   flex-direction: column;
   align-items: center;
   gap: 2px; /* Reduced gap */
-  min-height: 70px; /* Increased to accommodate countdown on second line */
+  min-height: 60px; /* Reduced - accommodate countdown without too much space */
   justify-content: flex-start;
   overflow: visible;
   padding-bottom: 0; /* Remove extra padding */
@@ -477,7 +478,7 @@
   justify-content: flex-start;
   text-align: center;
   white-space: normal; /* Allow wrapping to second line */
-  min-height: 36px; /* Reserve space for countdown line */
+  min-height: 32px; /* Reduced - reserve space for countdown line */
   line-height: 1.2;
   width: 100%;
 }
@@ -485,8 +486,9 @@
 /* Letter Rack */
 .letter-rack {
   background: transparent;
-  margin: 0 auto; /* Remove default margin - use Tailwind */
-  padding: 8px; /* Keep horizontal padding */
+  margin-left: auto; /* Center horizontally - allow Tailwind for vertical */
+  margin-right: auto; /* Center horizontally - allow Tailwind for vertical */
+  padding: 4px; /* Reduced horizontal padding */
   padding-top: 0; /* Remove top padding - use Tailwind */
   padding-bottom: 0; /* Remove bottom padding - use Tailwind */
   border-radius: 0;
@@ -536,7 +538,7 @@
 
 /* Play Button */
 .play-button-container {
-  padding: 8px; /* Keep horizontal padding */
+  padding: 4px; /* Reduced horizontal padding */
   padding-top: 0; /* Remove top padding - use Tailwind */
   padding-bottom: 0; /* Remove bottom padding - use Tailwind */
   position: relative;
@@ -545,8 +547,9 @@
   justify-content: center;
   align-items: center;
   background: transparent;
-  margin: 0 auto; /* Remove default margin - use Tailwind */
-  min-height: 60px;
+  margin-left: auto; /* Center horizontally - allow Tailwind for vertical */
+  margin-right: auto; /* Center horizontally - allow Tailwind for vertical */
+  min-height: 50px; /* Reduced */
   width: fit-content;
 }
 
@@ -634,7 +637,7 @@
   /* Timer wrapper - spacing controlled by Tailwind */
   
   .action-buttons {
-    gap: 24px; /* Significantly increased gap between hint and shuffle/ads row */
+    gap: 12px; /* Reduced gap between hint and shuffle/ads row */
   }
   
   .button-icon {
@@ -644,7 +647,11 @@
   
   .button-count, .button-text {
     font-size: 13px;
-    min-height: 34px;
+    min-height: 28px;
+  }
+  
+  .action-button {
+    min-height: 54px;
   }
   
   /* Timer section, letter rack, play button - spacing controlled by Tailwind */
@@ -708,7 +715,7 @@
   }
   
   .action-buttons {
-    gap: 22px; /* Significantly increased gap for better spacing */
+    gap: 10px; /* Reduced gap for better spacing */
   }
   
   .button-icon {
@@ -718,14 +725,18 @@
   
   .button-count, .button-text {
     font-size: 11px;
-    min-height: 32px;
+    min-height: 26px;
     font-weight: 600;
+  }
+  
+  .action-button {
+    min-height: 48px;
   }
   
   /* Timer section, letter rack, play button - spacing controlled by Tailwind */
   
   .action-buttons {
-    gap: 20px; /* Significantly increased gap for mobile */
+    gap: 10px; /* Reduced gap for mobile */
   }
   
   .play-button {
@@ -799,8 +810,12 @@
   
   .button-count, .button-text {
     font-size: 10px;
-    min-height: 30px;
+    min-height: 24px;
     font-weight: 600;
+  }
+  
+  .action-button {
+    min-height: 44px;
   }
 
   /* Extra compact header for ultra small widths */
@@ -1089,164 +1104,217 @@
   /* Spacing controlled by Tailwind */
 }
 
-@media (min-height: 701px) and (max-height: 750px) {
+/* Screen height: 850-870px */
+@media (min-height: 850px) and (max-height: 870px) {
   .board-content {
-    width: 220px;
+    width: 182px;
     height: auto;
-    min-height: 150px;
-    padding: 0.65rem;
-    padding-bottom: 1rem;
-    gap: 0.32rem;
+    min-height: 142px;
+    padding: 7px;
+    padding-bottom: 15px;
+    gap: 4px;
   }
   .letter-tile, .letter-slot {
-    width: 1.95rem;
-    height: 1.95rem;
-    font-size: 1rem;
-  }
-  /* Spacing controlled by Tailwind */
-  .play-button img {
-    width: 180px !important;
-    height: 40px !important;
-  }
-}
-
-@media (min-height: 650px) and (max-height: 700px) {
-  .board-content {
-    width: 200px;
-    height: auto;
-    min-height: 140px;
-    padding: 0.6rem;
-    padding-bottom: 1rem;
-    gap: 0.3rem;
-  }
-  .topmost-white-container {
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-    margin-bottom: 0.5rem;
-  }
-  .header {
-    padding: 0.5rem 0.75rem 0.25rem 0.75rem;
-  }
-  .letter-tile, .letter-slot {
-    width: 1.9rem;
-    height: 1.9rem;
-    font-size: 0.95rem;
-  }
-  /* Spacing controlled by Tailwind */
-  .play-button img {
-    width: 160px !important;
-    height: 36px !important;
-  }
-}
-
-@media (min-height: 600px) and (max-height: 650px) {
-  .board-content {
-    width: 180px;
-    height: auto;
-    min-height: 120px;
-    padding: 0.5rem;
-    padding-bottom: 0.9rem;
-    gap: 0.25rem;
-  }
-  .topmost-white-container {
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-    margin-bottom: 0.5rem;
-  }
-  .header {
-    padding: 0.5rem 0.75rem 0.25rem 0.75rem;
-  }
-  .letter-tile, .letter-slot {
-    width: 1.75rem;
-    height: 1.75rem;
-    font-size: 0.875rem;
-  }
-  /* Spacing controlled by Tailwind */
-  .play-button img {
-    width: 140px !important;
-    height: 32px !important;
-  }
-}
-
-@media (min-height: 550px) and (max-height: 600px) {
-  .board-content {
-    width: 160px;
-    height: auto;
-    min-height: 110px;
-    padding: 0.4rem;
-    padding-bottom: 0.8rem;
-    gap: 0.2rem;
-  }
-  .letter-tile, .letter-slot {
-    width: 1.6rem;
-    height: 1.6rem;
-    font-size: 0.8rem;
-  }
-  /* Spacing controlled by Tailwind */
-  .play-button img {
-    width: 120px !important;
-    height: 28px !important;
-  }
-}
-
-@media (min-height: 500px) and (max-height: 550px) {
-  .board-content {
-    width: 140px;
-    height: auto;
-    min-height: 95px;
-    padding: 0.3rem;
-    padding-bottom: 0.7rem;
-    gap: 0.18rem;
-  }
-  .letter-tile, .letter-slot {
-    width: 1.45rem;
-    height: 1.45rem;
-    font-size: 0.76rem;
-  }
-  /* Spacing controlled by Tailwind */
-  .play-button img {
-    width: 100px !important;
-    height: 24px !important;
-  }
-}
-
-/* Specific height: 896px */
-@media (min-height: 850px) and (max-height: 920px) {
-  .board-content {
-    width: 200px; /* Significantly reduced */
-    height: auto;
-    min-height: 160px;
-    padding: 8px; /* Reduced */
-    padding-bottom: 16px;
-    gap: 5px; /* Reduced */
-  }
-  .letter-tile, .letter-slot {
-    width: 28px; /* Reduced */
-    height: 28px;
-    font-size: 12px;
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
   }
   .button-icon {
-    width: 30px; /* Reduced */
-    height: 30px;
+    width: 28px;
+    height: 28px;
   }
   .action-button {
-    min-height: 36px !important; /* Reduced */
+    min-height: 49px !important;
     gap: 0px !important;
   }
   .action-buttons {
-    gap: 18px !important; /* Significantly increased gap between hint and shuffle/ads */
+    gap: 9px !important;
   }
   .game-board {
-    padding: 2px; /* Minimal */
-    margin: 0px auto; /* Zero */
+    padding: 2px;
+    margin: 0px auto;
   }
   .topmost-white-container {
-    padding-top: 0.125rem; /* Minimal */
+    padding-top: 0.0625rem;
+    padding-bottom: 0.0625rem;
+    margin-bottom: 0;
+  }
+  .close-button-section {
+    padding: 2px 7px 0px 7px;
+  }
+  .header {
+    padding: 0.0625rem 0.45rem 0.0625rem 0.45rem;
+  }
+  .currency-display {
+    padding: 2px 4px;
+    gap: 4px;
+  }
+  .currency-item {
+    gap: 0.0625rem;
+    padding: 0.0625rem 0.125rem;
+  }
+  .currency-item span {
+    font-size: 0.56rem;
+  }
+  .currency-item img {
+    width: 12px;
+    height: 12px;
+  }
+  .user-profile {
+    gap: 3px;
+  }
+  .user-profile span {
+    font-size: 0.56rem;
+  }
+  .user-profile .shrink-0 {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .user-profile .shrink-0 img {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .user-initial {
+    font-size: 0.56rem !important;
+  }
+  .corner-circle-bottom-left,
+  .corner-circle-bottom-right {
+    width: 9px;
+    height: 9px;
+  }
+  .timer-text {
+    font-size: 20px;
+  }
+  .timer-display img {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Screen height: 871-890px */
+@media (min-height: 871px) and (max-height: 890px) {
+  .board-content {
+    width: 185px;
+    height: auto;
+    min-height: 145px;
+    padding: 7px;
+    padding-bottom: 15px;
+    gap: 5px;
+  }
+  .letter-tile, .letter-slot {
+    width: 27px;
+    height: 27px;
+    font-size: 11px;
+  }
+  .button-icon {
+    width: 29px;
+    height: 29px;
+  }
+  .action-button {
+    min-height: 50px !important;
+    gap: 0px !important;
+  }
+  .action-buttons {
+    gap: 9px !important;
+  }
+  .game-board {
+    padding: 2px;
+    margin: 0px auto;
+  }
+  .topmost-white-container {
+    padding-top: 0.125rem;
     padding-bottom: 0.125rem;
     margin-bottom: 0;
   }
   .close-button-section {
     padding: 2px 8px 0px 8px;
+  }
+  .header {
+    padding: 0.0625rem 0.475rem 0.0625rem 0.475rem;
+  }
+  .currency-display {
+    padding: 2px 4px;
+    gap: 4px;
+  }
+  .currency-item {
+    gap: 0.0625rem;
+    padding: 0.0625rem 0.125rem;
+  }
+  .currency-item span {
+    font-size: 0.57rem;
+  }
+  .currency-item img {
+    width: 13px;
+    height: 13px;
+  }
+  .user-profile {
+    gap: 3px;
+  }
+  .user-profile span {
+    font-size: 0.57rem;
+  }
+  .user-profile .shrink-0 {
+    width: 1.28rem;
+    height: 1.28rem;
+  }
+  .user-profile .shrink-0 img {
+    width: 1.28rem;
+    height: 1.28rem;
+  }
+  .user-initial {
+    font-size: 0.57rem !important;
+  }
+  .corner-circle-bottom-left,
+  .corner-circle-bottom-right {
+    width: 9px;
+    height: 9px;
+  }
+  .timer-text {
+    font-size: 21px;
+  }
+  .timer-display img {
+    width: 21px;
+    height: 21px;
+  }
+}
+
+/* Screen height: 891-920px */
+@media (min-height: 891px) and (max-height: 920px) {
+  .board-content {
+    width: 188px;
+    height: auto;
+    min-height: 148px;
+    padding: 8px;
+    padding-bottom: 16px;
+    gap: 5px;
+  }
+  .letter-tile, .letter-slot {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+  .button-icon {
+    width: 30px;
+    height: 30px;
+  }
+  .action-button {
+    min-height: 51px !important;
+    gap: 0px !important;
+  }
+  .action-buttons {
+    gap: 9px !important;
+  }
+  .game-board {
+    padding: 2px;
+    margin: 0px auto;
+  }
+  .topmost-white-container {
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+    margin-bottom: 0;
+  }
+  .close-button-section {
+    padding: 3px 8px 0px 8px;
   }
   .header {
     padding: 0.0625rem 0.5rem 0.0625rem 0.5rem;
@@ -1260,6 +1328,615 @@
     padding: 0.0625rem 0.125rem;
   }
   .currency-item span {
+    font-size: 0.58rem;
+  }
+  .currency-item img {
+    width: 13px;
+    height: 13px;
+  }
+  .user-profile {
+    gap: 3px;
+  }
+  .user-profile span {
+    font-size: 0.58rem;
+  }
+  .user-profile .shrink-0 {
+    width: 1.3rem;
+    height: 1.3rem;
+  }
+  .user-profile .shrink-0 img {
+    width: 1.3rem;
+    height: 1.3rem;
+  }
+  .user-initial {
+    font-size: 0.58rem !important;
+  }
+  .corner-circle-bottom-left,
+  .corner-circle-bottom-right {
+    width: 10px;
+    height: 10px;
+  }
+  .timer-text {
+    font-size: 22px;
+  }
+  .timer-display img {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+/* Screen height: 921-935px */
+@media (min-height: 921px) and (max-height: 935px) {
+  .board-content {
+    width: 192px;
+    height: auto;
+    min-height: 152px;
+    padding: 8px;
+    padding-bottom: 16px;
+    gap: 5px;
+  }
+  .letter-tile, .letter-slot {
+    width: 29px;
+    height: 29px;
+    font-size: 12px;
+  }
+  .button-icon {
+    width: 31px;
+    height: 31px;
+  }
+  .action-button {
+    min-height: 51px !important;
+    gap: 0px !important;
+  }
+  .action-buttons {
+    gap: 10px !important;
+  }
+  .game-board {
+    padding: 2px;
+    margin: 0px auto;
+  }
+  .topmost-white-container {
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+    margin-bottom: 0;
+  }
+  .close-button-section {
+    padding: 3px 8px 0px 8px;
+  }
+  .header {
+    padding: 0.0625rem 0.5rem 0.0625rem 0.5rem;
+  }
+  .currency-display {
+    padding: 2px 4px;
+    gap: 4px;
+  }
+  .currency-item {
+    gap: 0.0625rem;
+    padding: 0.0625rem 0.125rem;
+  }
+  .currency-item span {
+    font-size: 0.59rem;
+  }
+  .currency-item img {
+    width: 13px;
+    height: 13px;
+  }
+  .user-profile {
+    gap: 3px;
+  }
+  .user-profile span {
+    font-size: 0.59rem;
+  }
+  .user-profile .shrink-0 {
+    width: 1.32rem;
+    height: 1.32rem;
+  }
+  .user-profile .shrink-0 img {
+    width: 1.32rem;
+    height: 1.32rem;
+  }
+  .user-initial {
+    font-size: 0.59rem !important;
+  }
+  .corner-circle-bottom-left,
+  .corner-circle-bottom-right {
+    width: 10px;
+    height: 10px;
+  }
+  .timer-text {
+    font-size: 23px;
+  }
+  .timer-display img {
+    width: 23px;
+    height: 23px;
+  }
+}
+
+/* Screen height: 936-950px */
+@media (min-height: 936px) and (max-height: 950px) {
+  .board-content {
+    width: 198px;
+    height: auto;
+    min-height: 158px;
+    padding: 9px;
+    padding-bottom: 17px;
+    gap: 5px;
+  }
+  .letter-tile, .letter-slot {
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
+  }
+  .button-icon {
+    width: 32px;
+    height: 32px;
+  }
+  .action-button {
+    min-height: 52px !important;
+    gap: 0px !important;
+  }
+  .action-buttons {
+    gap: 10px !important;
+  }
+  .game-board {
+    padding: 3px;
+    margin: 0px auto;
+  }
+  .topmost-white-container {
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+    margin-bottom: 0.125rem;
+  }
+  .close-button-section {
+    padding: 3px 9px 0px 9px;
+  }
+  .header {
+    padding: 0.0625rem 0.525rem 0.0625rem 0.525rem;
+  }
+  .currency-display {
+    padding: 2px 4px;
+    gap: 4px;
+  }
+  .currency-item {
+    gap: 0.0625rem;
+    padding: 0.0625rem 0.125rem;
+  }
+  .currency-item span {
+    font-size: 0.6rem;
+  }
+  .currency-item img {
+    width: 14px;
+    height: 14px;
+  }
+  .user-profile {
+    gap: 3px;
+  }
+  .user-profile span {
+    font-size: 0.6rem;
+  }
+  .user-profile .shrink-0 {
+    width: 1.35rem;
+    height: 1.35rem;
+  }
+  .user-profile .shrink-0 img {
+    width: 1.35rem;
+    height: 1.35rem;
+  }
+  .user-initial {
+    font-size: 0.6rem !important;
+  }
+  .corner-circle-bottom-left,
+  .corner-circle-bottom-right {
+    width: 11px;
+    height: 11px;
+  }
+  .timer-text {
+    font-size: 24px;
+  }
+  .timer-display img {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* Screen height: 951-975px */
+@media (min-height: 951px) and (max-height: 975px) {
+  .board-content {
+    width: 205px;
+    height: auto;
+    min-height: 165px;
+    padding: 9px;
+    padding-bottom: 17px;
+    gap: 6px;
+  }
+  .letter-tile, .letter-slot {
+    width: 31px;
+    height: 31px;
+    font-size: 13px;
+  }
+  .button-icon {
+    width: 33px;
+    height: 33px;
+  }
+  .action-button {
+    min-height: 53px !important;
+    gap: 0px !important;
+  }
+  .action-buttons {
+    gap: 11px !important;
+  }
+  .game-board {
+    padding: 3px;
+    margin: 0px auto;
+  }
+  .topmost-white-container {
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+    margin-bottom: 0.2rem;
+  }
+  .close-button-section {
+    padding: 3px 9px 0px 9px;
+  }
+  .header {
+    padding: 0.0625rem 0.55rem 0.0625rem 0.55rem;
+  }
+  .currency-display {
+    padding: 2px 4px;
+    gap: 4px;
+  }
+  .currency-item {
+    gap: 0.0625rem;
+    padding: 0.0625rem 0.15rem;
+  }
+  .currency-item span {
+    font-size: 0.62rem;
+  }
+  .currency-item img {
+    width: 14px;
+    height: 14px;
+  }
+  .user-profile {
+    gap: 4px;
+  }
+  .user-profile span {
+    font-size: 0.62rem;
+  }
+  .user-profile .shrink-0 {
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+  .user-profile .shrink-0 img {
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+  .user-initial {
+    font-size: 0.62rem !important;
+  }
+  .corner-circle-bottom-left,
+  .corner-circle-bottom-right {
+    width: 11px;
+    height: 11px;
+  }
+  .timer-text {
+    font-size: 25px;
+  }
+  .timer-display img {
+    width: 25px;
+    height: 25px;
+  }
+}
+
+/* Screen height: 976-1000px */
+@media (min-height: 976px) and (max-height: 1000px) {
+  .board-content {
+    width: 220px;
+    height: auto;
+    min-height: 180px;
+    padding: 10px;
+    padding-bottom: 18px;
+    gap: 7px;
+  }
+  .letter-tile, .letter-slot {
+    width: 34px;
+    height: 34px;
+    font-size: 14px;
+  }
+  .button-icon {
+    width: 36px;
+    height: 36px;
+  }
+  .action-button {
+    min-height: 54px !important;
+    gap: 0px !important;
+  }
+  .action-buttons {
+    gap: 12px !important;
+  }
+  .game-board {
+    padding: 3px;
+    margin: 0px auto;
+  }
+  .topmost-white-container {
+    padding-top: 0.15rem;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.25rem;
+  }
+  .close-button-section {
+    padding: 4px 10px 0px 10px;
+  }
+  .header {
+    padding: 0.125rem 0.6rem 0.125rem 0.6rem;
+  }
+  .currency-display {
+    padding: 3px 5px;
+    gap: 5px;
+  }
+  .currency-item {
+    gap: 0.125rem;
+    padding: 0.125rem 0.18rem;
+  }
+  .currency-item span {
+    font-size: 0.68rem;
+  }
+  .currency-item img {
+    width: 16px;
+    height: 16px;
+  }
+  .user-profile {
+    gap: 4px;
+  }
+  .user-profile span {
+    font-size: 0.68rem;
+  }
+  .user-profile .shrink-0 {
+    width: 1.55rem;
+    height: 1.55rem;
+  }
+  .user-profile .shrink-0 img {
+    width: 1.55rem;
+    height: 1.55rem;
+  }
+  .user-initial {
+    font-size: 0.68rem !important;
+  }
+  .corner-circle-bottom-left,
+  .corner-circle-bottom-right {
+    width: 13px;
+    height: 13px;
+  }
+  .timer-text {
+    font-size: 26px;
+  }
+  .timer-display img {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+/* Screen height: 1001px and above */
+@media (min-height: 1001px) {
+  .board-content {
+    width: 240px; /* Maximum size */
+    height: auto;
+    min-height: 210px; /* Maximum size */
+    padding: 14px;
+    padding-bottom: 22px;
+    gap: 8px;
+  }
+  .letter-tile, .letter-slot {
+    width: 38px; /* Maximum size */
+    height: 38px;
+    font-size: 16px; /* Maximum size */
+  }
+  .button-icon {
+    width: 40px; /* Maximum size */
+    height: 40px;
+  }
+  .action-button {
+    min-height: 58px !important;
+    gap: 0px !important;
+  }
+  .action-buttons {
+    gap: 14px !important;
+  }
+  .game-board {
+    padding: 4px;
+    margin: 0px auto;
+  }
+  .topmost-white-container {
+    padding-top: 0.2rem;
+    padding-bottom: 0.2rem;
+    margin-bottom: 0.5rem;
+  }
+  .close-button-section {
+    padding: 5px 12px 0px 12px;
+  }
+  .header {
+    padding: 0.15rem 0.7rem 0.15rem 0.7rem;
+  }
+  .currency-display {
+    padding: 4px 6px;
+    gap: 6px;
+  }
+  .currency-item {
+    gap: 0.15rem;
+    padding: 0.15rem 0.2rem;
+  }
+  .currency-item span {
+    font-size: 0.75rem;
+  }
+  .currency-item img {
+    width: 18px;
+    height: 18px;
+  }
+  .user-profile {
+    gap: 5px;
+  }
+  .user-profile span {
+    font-size: 0.75rem;
+  }
+  .user-profile .shrink-0 {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+  .user-profile .shrink-0 img {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+  .user-initial {
+    font-size: 0.75rem !important;
+  }
+  .corner-circle-bottom-left,
+  .corner-circle-bottom-right {
+    width: 14px;
+    height: 14px;
+  }
+  .timer-text {
+    font-size: 28px;
+  }
+  .timer-display img {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* Screen height: 800-820px */
+@media (min-height: 800px) and (max-height: 820px) {
+  .board-content {
+    width: 176px;
+    height: auto;
+    min-height: 136px;
+    padding: 6px;
+    padding-bottom: 14px;
+    gap: 4px;
+  }
+  .letter-tile, .letter-slot {
+    width: 25px;
+    height: 25px;
+    font-size: 10px;
+  }
+  .button-icon {
+    width: 27px;
+    height: 27px;
+  }
+  .action-button {
+    min-height: 48px !important;
+    gap: 0px !important;
+  }
+  .action-buttons {
+    gap: 8px !important;
+  }
+  .game-board {
+    padding: 2px;
+    margin: 0px auto;
+  }
+  .topmost-white-container {
+    padding-top: 0.0625rem;
+    padding-bottom: 0.0625rem;
+    margin-bottom: 0;
+  }
+  .close-button-section {
+    padding: 2px 7px 0px 7px;
+  }
+  .header {
+    padding: 0.0625rem 0.4rem 0.0625rem 0.4rem;
+  }
+  .currency-display {
+    padding: 2px 3px;
+    gap: 3px;
+  }
+  .currency-item {
+    gap: 0.0625rem;
+    padding: 0.0625rem 0.125rem;
+  }
+  .currency-item span {
+    font-size: 0.54rem;
+  }
+  .currency-item img {
+    width: 12px;
+    height: 12px;
+  }
+  .user-profile {
+    gap: 2px;
+  }
+  .user-profile span {
+    font-size: 0.54rem;
+  }
+  .user-profile .shrink-0 {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+  .user-profile .shrink-0 img {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+  .user-initial {
+    font-size: 0.54rem !important;
+  }
+  .corner-circle-bottom-left,
+  .corner-circle-bottom-right {
+    width: 8px;
+    height: 8px;
+  }
+  .timer-text {
+    font-size: 18px;
+  }
+  .timer-display img {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Screen height: 821-835px */
+@media (min-height: 821px) and (max-height: 835px) {
+  .board-content {
+    width: 178px;
+    height: auto;
+    min-height: 138px;
+    padding: 6px;
+    padding-bottom: 14px;
+    gap: 4px;
+  }
+  .letter-tile, .letter-slot {
+    width: 25px;
+    height: 25px;
+    font-size: 11px;
+  }
+  .button-icon {
+    width: 27px;
+    height: 27px;
+  }
+  .action-button {
+    min-height: 48px !important;
+    gap: 0px !important;
+  }
+  .action-buttons {
+    gap: 8px !important;
+  }
+  .game-board {
+    padding: 2px;
+    margin: 0px auto;
+  }
+  .topmost-white-container {
+    padding-top: 0.0625rem;
+    padding-bottom: 0.0625rem;
+    margin-bottom: 0;
+  }
+  .close-button-section {
+    padding: 2px 7px 0px 7px;
+  }
+  .header {
+    padding: 0.0625rem 0.425rem 0.0625rem 0.425rem;
+  }
+  .currency-display {
+    padding: 2px 3px;
+    gap: 3px;
+  }
+  .currency-item {
+    gap: 0.0625rem;
+    padding: 0.0625rem 0.125rem;
+  }
+  .currency-item span {
     font-size: 0.55rem;
   }
   .currency-item img {
@@ -1267,88 +1944,100 @@
     height: 12px;
   }
   .user-profile {
-    gap: 3px;
+    gap: 2px;
   }
   .user-profile span {
-    font-size: 0.5625rem;
+    font-size: 0.55rem;
   }
   .user-profile .shrink-0 {
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 1.22rem;
+    height: 1.22rem;
   }
   .user-profile .shrink-0 img {
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 1.22rem;
+    height: 1.22rem;
   }
   .user-initial {
     font-size: 0.55rem !important;
   }
+  .corner-circle-bottom-left,
+  .corner-circle-bottom-right {
+    width: 8px;
+    height: 8px;
+  }
+  .timer-text {
+    font-size: 19px;
+  }
+  .timer-display img {
+    width: 19px;
+    height: 19px;
+  }
 }
 
-/* Specific height: 844px */
-@media (min-height: 800px) and (max-height: 849px) {
+/* Screen height: 836-849px */
+@media (min-height: 836px) and (max-height: 849px) {
   .board-content {
-    width: 180px; /* Significantly reduced */
+    width: 180px;
     height: auto;
     min-height: 140px;
-    padding: 6px; /* Significantly reduced */
-    padding-bottom: 14px;
-    gap: 4px; /* Significantly reduced */
+    padding: 7px;
+    padding-bottom: 15px;
+    gap: 4px;
   }
   .letter-tile, .letter-slot {
-    width: 26px; /* Significantly reduced */
+    width: 26px;
     height: 26px;
     font-size: 11px;
   }
   .button-icon {
-    width: 28px; /* Significantly reduced */
+    width: 28px;
     height: 28px;
   }
   .action-button {
-    min-height: 35px !important; /* Further reduced */
+    min-height: 49px !important;
     gap: 0px !important;
   }
   .action-buttons {
-    gap: 18px !important; /* Significantly increased gap between hint and shuffle/ads */
+    gap: 8px !important;
   }
   .game-board {
-    padding: 2px; /* Minimal padding */
-    margin: 0px auto; /* Zero margin */
+    padding: 2px;
+    margin: 0px auto;
   }
   .topmost-white-container {
-    padding-top: 0.125rem; /* Minimal */
-    padding-bottom: 0.125rem; /* Minimal */
-    margin-bottom: 0; /* Zero */
+    padding-top: 0.0625rem;
+    padding-bottom: 0.0625rem;
+    margin-bottom: 0;
   }
   .close-button-section {
-    padding: 2px 8px 0px 8px; /* Minimal */
+    padding: 2px 7px 0px 7px;
   }
   .header {
-    padding: 0.0625rem 0.5rem 0.0625rem 0.5rem; /* Ultra-minimal */
+    padding: 0.0625rem 0.45rem 0.0625rem 0.45rem;
   }
   .currency-display {
-    padding: 2px 4px; /* Further reduced */
-    gap: 4px; /* Reduced */
+    padding: 2px 4px;
+    gap: 3px;
   }
   .currency-item {
     gap: 0.0625rem;
     padding: 0.0625rem 0.125rem;
   }
   .currency-item span {
-    font-size: 0.55rem; /* Smaller text */
+    font-size: 0.56rem;
   }
   .currency-item img {
-    width: 12px; /* Smaller icons */
+    width: 12px;
     height: 12px;
   }
   .user-profile {
-    gap: 3px;
+    gap: 2px;
   }
   .user-profile span {
-    font-size: 0.5625rem; /* Smaller */
+    font-size: 0.56rem;
   }
   .user-profile .shrink-0 {
-    width: 1.25rem; /* Smaller */
+    width: 1.25rem;
     height: 1.25rem;
   }
   .user-profile .shrink-0 img {
@@ -1356,110 +2045,214 @@
     height: 1.25rem;
   }
   .user-initial {
-    font-size: 0.55rem !important;
+    font-size: 0.56rem !important;
+  }
+  .corner-circle-bottom-left,
+  .corner-circle-bottom-right {
+    width: 9px;
+    height: 9px;
+  }
+  .timer-text {
+    font-size: 20px;
+  }
+  .timer-display img {
+    width: 20px;
+    height: 20px;
   }
 }
 
-/* Specific height: 720px */
-@media (min-height: 700px) and (max-height: 750px) {
+/* Screen height: 700-800px - Using 650-670px sizing for compact display */
+@media (min-height: 700px) and (max-height: 800px) {
   .board-content {
-    width: 170px; /* Significantly reduced */
+    width: 155px;
     height: auto;
-    min-height: 130px;
-    padding: 6px; /* Reduced */
-    padding-bottom: 14px;
-    gap: 4px; /* Reduced */
+    min-height: 115px;
+    padding: 4px;
+    padding-bottom: 12px;
+    gap: 3px;
   }
   .letter-tile, .letter-slot {
-    width: 24px; /* Significantly reduced */
-    height: 24px;
-    font-size: 10px;
+    width: 21px;
+    height: 21px;
+    font-size: 9px;
   }
   .button-icon {
-    width: 26px; /* Reduced */
-    height: 26px;
+    width: 23px;
+    height: 23px;
   }
   .action-button {
-    min-height: 32px !important; /* Further reduced */
+    min-height: 45px !important;
     gap: 0px !important;
   }
   .action-buttons {
-    gap: 16px !important; /* Significantly increased gap between hint and shuffle/ads */
+    gap: 7px !important;
+  }
+  .header {
+    padding: 0.0625rem 0.35rem 0.0625rem 0.35rem;
+  }
+  .currency-display {
+    padding: 1px 2px;
+    gap: 2px;
+  }
+  .currency-item {
+    gap: 0.03125rem;
+    padding: 0.03125rem 0.0625rem;
+  }
+  .currency-item span {
+    font-size: 0.48rem;
+  }
+  .currency-item img {
+    width: 10px;
+    height: 10px;
   }
   .game-board {
-    padding: 2px; /* Minimal */
-    margin: 0px auto; /* Zero */
+    padding: 1px;
+    margin: 0px auto;
   }
   .topmost-white-container {
-    padding-top: 0.125rem; /* Minimal */
-    padding-bottom: 0.125rem;
+    padding-top: 0.0625rem;
+    padding-bottom: 0.0625rem;
     margin-bottom: 0;
   }
   .close-button-section {
-    padding: 2px 6px 0px 6px; /* Minimal */
-  }
-  .header {
-    padding: 0.0625rem 0.375rem 0.0625rem 0.375rem; /* Ultra-minimal */
-  }
-  .currency-display {
-    padding: 1px 3px;
-    gap: 3px;
-  }
-  .currency-item {
-    gap: 0.0625rem;
-    padding: 0.0625rem 0.125rem;
-  }
-  .currency-item span {
-    font-size: 0.5rem;
-  }
-  .currency-item img {
-    width: 11px;
-    height: 11px;
+    padding: 1px 5px 0px 5px;
   }
   .user-profile {
     gap: 2px;
   }
   .user-profile span {
-    font-size: 0.5rem;
+    font-size: 0.48rem;
   }
   .user-profile .shrink-0 {
-    width: 1.125rem;
-    height: 1.125rem;
+    width: 0.95rem;
+    height: 0.95rem;
   }
   .user-profile .shrink-0 img {
-    width: 1.125rem;
-    height: 1.125rem;
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+  .user-initial {
+    font-size: 0.46rem !important;
+  }
+  .timer-text {
+    font-size: 14px;
+  }
+  .timer-display img {
+    width: 14px;
+    height: 14px;
   }
 }
 
-/* Specific height: 667px */
-@media (min-height: 650px) and (max-height: 699px) {
+/* Screen height: 650-670px */
+@media (min-height: 650px) and (max-height: 670px) {
   .board-content {
-    width: 160px; /* Significantly reduced */
+    width: 155px;
     height: auto;
-    min-height: 120px;
-    padding: 5px; /* Reduced */
-    padding-bottom: 13px;
-    gap: 3px; /* Reduced */
+    min-height: 115px;
+    padding: 4px;
+    padding-bottom: 12px;
+    gap: 3px;
   }
   .letter-tile, .letter-slot {
-    width: 22px; /* Significantly reduced */
+    width: 21px;
+    height: 21px;
+    font-size: 9px;
+  }
+  .button-icon {
+    width: 23px;
+    height: 23px;
+  }
+  .action-button {
+    min-height: 45px !important;
+    gap: 0px !important;
+  }
+  .action-buttons {
+    gap: 7px !important;
+  }
+  .header {
+    padding: 0.0625rem 0.35rem 0.0625rem 0.35rem;
+  }
+  .currency-display {
+    padding: 1px 2px;
+    gap: 2px;
+  }
+  .currency-item {
+    gap: 0.03125rem;
+    padding: 0.03125rem 0.0625rem;
+  }
+  .currency-item span {
+    font-size: 0.48rem;
+  }
+  .currency-item img {
+    width: 10px;
+    height: 10px;
+  }
+  .game-board {
+    padding: 1px;
+    margin: 0px auto;
+  }
+  .topmost-white-container {
+    padding-top: 0.0625rem;
+    padding-bottom: 0.0625rem;
+    margin-bottom: 0;
+  }
+  .close-button-section {
+    padding: 1px 5px 0px 5px;
+  }
+  .user-profile {
+    gap: 2px;
+  }
+  .user-profile span {
+    font-size: 0.48rem;
+  }
+  .user-profile .shrink-0 {
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+  .user-profile .shrink-0 img {
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+  .user-initial {
+    font-size: 0.46rem !important;
+  }
+  .timer-text {
+    font-size: 14px;
+  }
+  .timer-display img {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* Screen height: 671-690px */
+@media (min-height: 671px) and (max-height: 690px) {
+  .board-content {
+    width: 160px;
+    height: auto;
+    min-height: 120px;
+    padding: 5px;
+    padding-bottom: 13px;
+    gap: 3px;
+  }
+  .letter-tile, .letter-slot {
+    width: 22px;
     height: 22px;
     font-size: 9px;
   }
   .button-icon {
-    width: 24px; /* Reduced */
+    width: 24px;
     height: 24px;
   }
   .action-button {
-    min-height: 30px !important; /* Further reduced */
+    min-height: 46px !important;
     gap: 0px !important;
   }
   .action-buttons {
-    gap: 16px !important; /* Significantly increased gap between hint and shuffle/ads */
+    gap: 8px !important;
   }
   .header {
-    padding: 0.0625rem 0.375rem 0.0625rem 0.375rem; /* Minimal */
+    padding: 0.0625rem 0.375rem 0.0625rem 0.375rem;
   }
   .currency-display {
     padding: 1px 3px;
@@ -1470,23 +2263,23 @@
     padding: 0.0625rem 0.125rem;
   }
   .currency-item span {
-    font-size: 0.5rem; /* Smaller */
+    font-size: 0.5rem;
   }
   .currency-item img {
-    width: 10px; /* Smaller */
+    width: 10px;
     height: 10px;
   }
   .game-board {
-    padding: 2px; /* Minimal */
-    margin: 0px auto; /* Zero */
+    padding: 2px;
+    margin: 0px auto;
   }
   .topmost-white-container {
-    padding-top: 0.125rem; /* Minimal */
+    padding-top: 0.125rem;
     padding-bottom: 0.125rem;
     margin-bottom: 0;
   }
   .close-button-section {
-    padding: 2px 6px 0px 6px; /* Minimal */
+    padding: 2px 6px 0px 6px;
   }
   .user-profile {
     gap: 2px;
@@ -1504,6 +2297,95 @@
   }
   .user-initial {
     font-size: 0.48rem !important;
+  }
+  .timer-text {
+    font-size: 15px;
+  }
+  .timer-display img {
+    width: 15px;
+    height: 15px;
+  }
+}
+
+/* Screen height: 691-699px */
+@media (min-height: 691px) and (max-height: 699px) {
+  .board-content {
+    width: 165px;
+    height: auto;
+    min-height: 125px;
+    padding: 5px;
+    padding-bottom: 13px;
+    gap: 3px;
+  }
+  .letter-tile, .letter-slot {
+    width: 23px;
+    height: 23px;
+    font-size: 9px;
+  }
+  .button-icon {
+    width: 25px;
+    height: 25px;
+  }
+  .action-button {
+    min-height: 46px !important;
+    gap: 0px !important;
+  }
+  .action-buttons {
+    gap: 8px !important;
+  }
+  .header {
+    padding: 0.0625rem 0.375rem 0.0625rem 0.375rem;
+  }
+  .currency-display {
+    padding: 1px 3px;
+    gap: 2px;
+  }
+  .currency-item {
+    gap: 0.0625rem;
+    padding: 0.0625rem 0.125rem;
+  }
+  .currency-item span {
+    font-size: 0.5rem;
+  }
+  .currency-item img {
+    width: 11px;
+    height: 11px;
+  }
+  .game-board {
+    padding: 2px;
+    margin: 0px auto;
+  }
+  .topmost-white-container {
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+    margin-bottom: 0;
+  }
+  .close-button-section {
+    padding: 2px 6px 0px 6px;
+  }
+  .user-profile {
+    gap: 2px;
+  }
+  .user-profile span {
+    font-size: 0.5rem;
+  }
+  .user-profile .shrink-0 {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+  .user-profile .shrink-0 img {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+  .user-initial {
+    font-size: 0.5rem !important;
+  }
+  .timer-text {
+    font-size: 16px;
+  }
+  .timer-display img {
+    width: 16px;
+    height: 16px;
   }
 }
 

@@ -1437,10 +1437,22 @@ const handleGameOver = () => {
         }
       });
       
-      const distractionCount = Math.ceil(requiredLetters.length * 0.3);
-      const distractions = Array.from({ length: distractionCount }, () =>
-        requiredLetters[Math.floor(Math.random() * requiredLetters.length)]
-      );
+      // Generate odd/distraction letters that are NOT in the required letters
+      const distractionCount = Math.ceil(requiredLetters.length * 0.6);
+      const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const requiredLetterSet = new Set(requiredLetters);
+      
+      // Get letters that are NOT in the required set (odd letters)
+      const oddLetterCandidates = alphabet.split('').filter(letter => !requiredLetterSet.has(letter));
+      
+      const distractions = [];
+      for (let i = 0; i < distractionCount; i++) {
+        // Pick random odd letters from candidates
+        const randomLetter = oddLetterCandidates[Math.floor(Math.random() * oddLetterCandidates.length)];
+        distractions.push(randomLetter);
+      }
+      
+      console.log(`📝 Letter rack: ${requiredLetters.length} required letters + ${distractions.length} odd letters (${distractions.join(', ')})`);
       
       const allRackLetters = [...requiredLetters, ...distractions].sort(() => 0.5 - Math.random());
       setLetters(allRackLetters);
@@ -1818,36 +1830,36 @@ const handleGameOver = () => {
     
     // Wait for modal to close, then proceed with level advancement
     setTimeout(() => {
-      timerStartedRef.current = false;
+    timerStartedRef.current = false;
+    
+    // Increment level
+    const newLevel = level + 1;
+    setLevel(newLevel);
+    
+    // Update highest level if needed
+    if (newLevel > highestLevelRef.current) {
+      highestLevelRef.current = newLevel;
+      setHighestLevel(newLevel);
       
-      // Increment level
-      const newLevel = level + 1;
-      setLevel(newLevel);
-      
-      // Update highest level if needed
-      if (newLevel > highestLevelRef.current) {
-        highestLevelRef.current = newLevel;
-        setHighestLevel(newLevel);
-        
-        // Save the new highest level to database
-        try {
-          updateUser(user?.telegram_id, { highest_level: newLevel });
-          console.log("Updated highest level in database:", newLevel);
-        } catch (error) {
-          console.error("Failed to update highest level:", error);
-        }
+      // Save the new highest level to database
+      try {
+        updateUser(user?.telegram_id, { highest_level: newLevel });
+        console.log("Updated highest level in database:", newLevel);
+      } catch (error) {
+        console.error("Failed to update highest level:", error);
       }
-      
-      setIsLoading(true);
-      
-      // Clear selections
-      setSelectedLetterIndex(null);
-      setSelectedGridIndex(null);
-      
+    }
+    
+    setIsLoading(true);
+    
+    // Clear selections
+    setSelectedLetterIndex(null);
+    setSelectedGridIndex(null);
+    
       // Setup next level with updated state
-      setTimeout(() => {
+    setTimeout(() => {
         setupGame(newLevel);
-        setIsLoading(false);
+    setIsLoading(false);
         isSubmittingRef.current = false; // Reset flag after level setup
       }, 100);
     }, 50);
@@ -1908,19 +1920,19 @@ const handleGameOver = () => {
           </div>
           <div className="currency-display">
             <div className="currency-item" title="Q_points">
-              <img src="/assets/token.png" alt="Q_points" width={20} height={20} />
+                <img src="/assets/token.png" alt="Q_points" width={20} height={20} />
               <span className="text-[#ffffff] text-left font-normal">{tmsPoints}</span>
             </div>
             <div className="currency-item" title="Gems">
-              <img src="/assets/diamond.png" alt="Gems" width={20} height={20} />
+                <img src="/assets/diamond.png" alt="Gems" width={20} height={20} />
               <span className="text-[#ffffff] text-left font-normal">{gems}</span>
             </div>
             <div className="currency-item" title="Level">
-              <img src="/assets/cup.png" alt="Level" width={18} height={18} />
+                <img src="/assets/cup.png" alt="Level" width={18} height={18} />
               <span className="text-[#ffffff] text-left font-normal">{level}</span>
             </div>
             <div className="currency-item" title="Trials">
-              <RotateCcw size={18} color="#ffffff" />
+                <RotateCcw size={18} color="#ffffff" />
               <span className="text-[#ffffff] text-left font-normal">
                 {availableTrials !== null ? availableTrials : '--'}
               </span>
@@ -3227,396 +3239,6 @@ const handleGameOver = () => {
           }
         }
 
-        @media (min-height: 751px) and (max-height: 780px) {
-          .game-play-word-formed-point-awarded {
-            padding-top: 0;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-          }
-          .topmost-white-container {
-            margin-bottom: 0.4rem;
-            padding: 0.6rem;
-            flex-shrink: 0;
-          }
-          .board-content {
-            width: 300px;
-            height: 220px;
-            padding: 14px;
-            gap: 7px;
-          }
-          
-          .corner-circle-top-left {
-            width: 18px;
-            height: 18px;
-            top: 4px;
-            left: 4px;
-          }
-          
-          .corner-circle-top-right {
-            width: 18px;
-            height: 18px;
-            top: 4px;
-            right: 4px;
-          }
-          
-          .corner-circle-bottom-left {
-            width: 18px;
-            height: 18px;
-            bottom: 4px;
-            left: 4px;
-          }
-          
-          .corner-circle-bottom-right {
-            width: 18px;
-            height: 18px;
-            bottom: 4px;
-            right: 4px;
-          }
-          
-          .letter-tile, .letter-slot {
-            width: 52px;
-            height: 52px;
-            font-size: 22px;
-          }
-          .timer-section {
-            margin: 0.4rem 8px;
-            padding: 0.6rem;
-            flex-shrink: 0;
-          }
-          .letter-rack {
-            margin: 0.4rem;
-            padding: 0.6rem;
-            margin-bottom: 0.4rem;
-            flex-shrink: 0;
-          }
-          .play-button-container {
-            margin: 0.4rem;
-            padding: 0.6rem;
-            flex-shrink: 0;
-          }
-          .play-button {
-            min-width: 170px;
-            min-height: 38px;
-            font-size: 14px;
-          }
-        }
-
-        @media (min-height: 781px) and (max-height: 789px) {
-          .game-play-word-formed-point-awarded {
-            padding-top: 0;
-          }
-          .topmost-white-container {
-            margin-bottom: 0.5rem;
-            padding: 0.65rem;
-          }
-          .board-content {
-            width: 310px;
-            height: 230px;
-            padding: 15px;
-            gap: 7px;
-          }
-          
-          .corner-circle-top-left {
-            width: 19px;
-            height: 19px;
-            top: 4px;
-            left: 4px;
-          }
-          
-          .corner-circle-top-right {
-            width: 19px;
-            height: 19px;
-            top: 4px;
-            right: 4px;
-          }
-          
-          .corner-circle-bottom-left {
-            width: 19px;
-            height: 19px;
-            bottom: 4px;
-            left: 4px;
-          }
-          
-          .corner-circle-bottom-right {
-            width: 19px;
-            height: 19px;
-            bottom: 4px;
-            right: 4px;
-          }
-          
-          .letter-tile, .letter-slot {
-            width: 53px;
-            height: 53px;
-            font-size: 22px;
-          }
-          .timer-section {
-            margin: 0.5rem 8px;
-            padding: 0.65rem;
-          }
-          .letter-rack {
-            margin: 0.5rem;
-            padding: 0.65rem;
-            margin-bottom: 0.5rem;
-          }
-          .play-button-container {
-            margin: 0.5rem;
-            padding: 0.65rem;
-          }
-        }
-
-        @media (min-height: 790px) and (max-height: 810px) {
-          .game-play-word-formed-point-awarded {
-            padding-top: 0;
-          }
-          .topmost-white-container {
-            margin-bottom: 0.5rem;
-            padding: 0.65rem;
-          }
-          .board-content {
-            width: 300px;
-            height: 220px;
-            padding: 14px;
-            gap: 7px;
-          }
-          
-          .corner-circle-top-left {
-            width: 18px;
-            height: 18px;
-            top: 4px;
-            left: 4px;
-          }
-          
-          .corner-circle-top-right {
-            width: 18px;
-            height: 18px;
-            top: 4px;
-            right: 4px;
-          }
-          
-          .corner-circle-bottom-left {
-            width: 18px;
-            height: 18px;
-            bottom: 4px;
-            left: 4px;
-          }
-          
-          .corner-circle-bottom-right {
-            width: 18px;
-            height: 18px;
-            bottom: 4px;
-            right: 4px;
-          }
-          
-          .letter-tile, .letter-slot {
-            width: 50px;
-            height: 50px;
-            font-size: 21px;
-          }
-          .timer-section {
-            margin: 0.5rem 8px;
-            padding: 0.65rem;
-          }
-          .letter-rack {
-            margin: 0.5rem;
-            padding: 0.65rem;
-            margin-bottom: 0.5rem;
-          }
-          .play-button-container {
-            margin: 0.5rem;
-            padding: 0.65rem;
-          }
-        }
-
-        @media (min-height: 811px) and (max-height: 820px) {
-          .game-play-word-formed-point-awarded {
-            padding-top: 0;
-          }
-          .topmost-white-container {
-            margin-bottom: 0.6rem;
-            padding: 0.75rem;
-          }
-          .board-content {
-            width: 320px;
-            height: 240px;
-            padding: 15px;
-            gap: 8px;
-          }
-          
-          .corner-circle-top-left {
-            width: 19px;
-            height: 19px;
-            top: 5px;
-            left: 5px;
-          }
-          
-          .corner-circle-top-right {
-            width: 19px;
-            height: 19px;
-            top: 5px;
-            right: 5px;
-          }
-          
-          .corner-circle-bottom-left {
-            width: 19px;
-            height: 19px;
-            bottom: 5px;
-            left: 5px;
-          }
-          
-          .corner-circle-bottom-right {
-            width: 19px;
-            height: 19px;
-            bottom: 5px;
-            right: 5px;
-          }
-          
-          .letter-tile, .letter-slot {
-            width: 54px;
-            height: 54px;
-            font-size: 22px;
-          }
-          .timer-section {
-            margin: 0.6rem 8px;
-            padding: 0.75rem;
-          }
-          .letter-rack {
-            margin: 0.6rem;
-            padding: 0.75rem;
-            margin-bottom: 0.6rem;
-          }
-          .play-button-container {
-            margin: 0.6rem;
-            padding: 0.75rem;
-          }
-        }
-
-        @media (min-height: 821px) and (max-height: 839px) {
-          .game-play-word-formed-point-awarded {
-            padding-top: 0;
-          }
-          .topmost-white-container {
-            margin-bottom: 0.65rem;
-            padding: 0.8rem;
-          }
-          .board-content {
-            width: 330px;
-            height: 250px;
-            padding: 16px;
-            gap: 8px;
-          }
-          
-          .corner-circle-top-left {
-            width: 20px;
-            height: 20px;
-            top: 5px;
-            left: 5px;
-          }
-          
-          .corner-circle-top-right {
-            width: 20px;
-            height: 20px;
-            top: 5px;
-            right: 5px;
-          }
-          
-          .corner-circle-bottom-left {
-            width: 20px;
-            height: 20px;
-            bottom: 5px;
-            left: 5px;
-          }
-          
-          .corner-circle-bottom-right {
-            width: 20px;
-            height: 20px;
-            bottom: 5px;
-            right: 5px;
-          }
-          
-          .letter-tile, .letter-slot {
-            width: 56px;
-            height: 56px;
-            font-size: 23px;
-          }
-          .timer-section {
-            margin: 0.65rem 8px;
-            padding: 0.8rem;
-          }
-          .letter-rack {
-            margin: 0.65rem;
-            padding: 0.8rem;
-            margin-bottom: 0.65rem;
-          }
-          .play-button-container {
-            margin: 0.65rem;
-            padding: 0.8rem;
-          }
-        }
-
-        @media (min-height: 840px) and (max-height: 880px) {
-          .game-play-word-formed-point-awarded {
-            padding-top: 0;
-          }
-          .topmost-white-container {
-            margin-bottom: 0.6rem;
-            padding: 0.75rem;
-          }
-          .board-content {
-            width: 310px;
-            height: 230px;
-            padding: 14px;
-            gap: 7px;
-          }
-          
-          .corner-circle-top-left {
-            width: 19px;
-            height: 19px;
-            top: 4px;
-            left: 4px;
-          }
-          
-          .corner-circle-top-right {
-            width: 19px;
-            height: 19px;
-            top: 4px;
-            right: 4px;
-          }
-          
-          .corner-circle-bottom-left {
-            width: 19px;
-            height: 19px;
-            bottom: 4px;
-            left: 4px;
-          }
-          
-          .corner-circle-bottom-right {
-            width: 19px;
-            height: 19px;
-            bottom: 4px;
-            right: 4px;
-          }
-          
-          .letter-tile, .letter-slot {
-            width: 52px;
-            height: 52px;
-            font-size: 22px;
-          }
-          .timer-section {
-            margin: 0.6rem 8px;
-            padding: 0.75rem;
-          }
-          .letter-rack {
-            margin: 0.6rem;
-            padding: 0.75rem;
-            margin-bottom: 0.6rem;
-          }
-          .play-button-container {
-            margin: 0.6rem;
-            padding: 0.75rem;
-          }
-        }
 
         @media (min-height: 881px) and (max-height: 900px) {
           .game-play-word-formed-point-awarded {
