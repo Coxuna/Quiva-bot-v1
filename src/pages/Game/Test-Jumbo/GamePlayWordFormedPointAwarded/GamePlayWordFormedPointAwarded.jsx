@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Volume2, VolumeX, RotateCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import "./GamePlayWordFormedPointAwarded.css";
@@ -7,6 +7,9 @@ import { useSoundManager } from '../../../../hooks/SoundManager';
 import { useTelegramWebApp } from '../../../../hooks/TelegramProvider';
 import { useUser } from '../../../../hooks/UserProvider';
 import { threeLetterWords, fourLetterWords,fiveLetterWords,sixLetterWords,sevenLetterWords } from '../../../../components/Jumbo-Jester/words';
+import { createHederaTokenService } from '../../../../services/hederaTokenService';
+import { useWalletConnect } from '../../../../hooks/useWalletConnect';
+import WalletConnectButton from '../../../../components/Hedera/WalletConnectButton';
 // Updated word fetching function that always uses fixed positions
 // Modified fetchRandomThreeLetterWords function to adjust grid sizes
 export const fetchRandomThreeLetterWords = async (level = 1, usedWordsSet = new Set()) => {
@@ -226,6 +229,260 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
 
   // Sound control (mute icon)
   const { toggleMute, isMuted, playBackgroundMusic, stopBackgroundMusic } = useSoundManager?.() || {};
+
+  // WalletConnect wallet connection
+  const {
+    isConnected: isWalletConnected,
+    accountId: walletAccountId,
+    connect: connectWallet,
+    disconnect: disconnectWallet
+  } = useWalletConnect();
+
+  // Hedera Token Service integration
+  const [hederaService, setHederaService] = useState(null);
+  const [hederaEnabled, setHederaEnabled] = useState(false);
+  const [hederaConfig, setHederaConfig] = useState({
+    network: import.meta.env.VITE_HEDERA_NETWORK || 'testnet',
+    tokenId: import.meta.env.VITE_HEDERA_TOKEN_ID || null,
+    operatorId: import.meta.env.VITE_HEDERA_OPERATOR_ID || null,
+    operatorKey: import.meta.env.VITE_HEDERA_OPERATOR_KEY || null,
+  });
+
+  // Initialize Hedera Token Service
+  useEffect(() => {
+    const initHederaService = async () => {
+      try {
+        // Check if Hedera is enabled and configured
+        if (hederaConfig.tokenId && hederaConfig.operatorId && hederaConfig.operatorKey) {
+          const service = createHederaTokenService(hederaConfig);
+          const initialized = await service.initializeClient();
+          
+          if (initialized) {
+            setHederaService(service);
+            setHederaEnabled(true);
+            console.log('✅ Hedera Token Service initialized successfully');
+          } else {
+            console.warn('⚠️ Hedera SDK not available, using API fallback');
+            setHederaService(service);
+            setHederaEnabled(true); // Still enable for API fallback
+          }
+        } else {
+          console.log('ℹ️ Hedera Token Service not configured (missing env variables)');
+          setHederaEnabled(false);
+        }
+      } catch (error) {
+        console.error('❌ Error initializing Hedera Token Service:', error);
+        setHederaEnabled(false);
+      }
+    };
+
+    initHederaService();
+  }, []);
+
+  /**
+   * Centralized Reward Processing Function
+   * Processes all rewards (Q points and Hedera tokens) when a level is completed successfully
+   * 
+   * @param {number} earnedPoints - Points earned from completing words
+   * @param {number} currentLevel - Current level number
+   * @param {boolean} levelCompleted - Whether the level was completed successfully (all words correct)
+   * @returns {Promise<Object>} - Reward processing result
+   */
+  const processRewards = async (earnedPoints, currentLevel, levelCompleted) => {
+    console.log('🎁 Processing rewards...');
+    console.log(`  Points earned: ${earnedPoints}`);
+    console.log(`  Level: ${currentLevel}`);
+    console.log(`  Level completed: ${levelCompleted}`);
+
+    // Only process rewards if level was completed successfully
+    if (!levelCompleted) {
+      console.log('⚠️ Level not completed - rewards will not be processed');
+      return {
+        success: false,
+        reason: 'Level not completed',
+        pointsAwarded: 0,
+        tokensAwarded: 0
+      };
+    }
+
+    if (earnedPoints <= 0) {
+      console.log('⚠️ No points earned - no rewards to process');
+      return {
+        success: false,
+        reason: 'No points earned',
+        pointsAwarded: 0,
+        tokensAwarded: 0
+      };
+    }
+
+    try {
+      // Step 1: Update Q points in database
+      const TotalPoints = parseFloat(tmsPoints) + parseFloat(earnedPoints);
+      const newTotalPoints = TotalPoints.toFixed(2);
+      
+      console.log(`📊 Updating Q points: ${tmsPoints} + ${earnedPoints} = ${newTotalPoints}`);
+      await updateUser(user?.telegram_id, { tms_points: newTotalPoints });
+      console.log('✅ Q points updated successfully');
+
+      // Step 2: Award Hedera tokens (if enabled)
+      // Don't show separate token modal since success modal is already showing
+      let tokensAwarded = 0;
+      if (hederaEnabled && hederaService) {
+        tokensAwarded = await awardHederaTokens(earnedPoints, currentLevel, false);
+      } else {
+        console.log('ℹ️ Hedera tokens not enabled, skipping token award');
+      }
+
+      return {
+        success: true,
+        pointsAwarded: earnedPoints,
+        tokensAwarded: tokensAwarded,
+        newTotalPoints: newTotalPoints
+      };
+    } catch (error) {
+      console.error('❌ Error processing rewards:', error);
+      return {
+        success: false,
+        reason: error.message,
+        pointsAwarded: 0,
+        tokensAwarded: 0
+      };
+    }
+  };
+
+  /**
+   * Award Hedera tokens when level is completed successfully
+   * @param {number} pointsEarned - Points earned in the game
+   * @param {number} currentLevel - Current level number
+   * @param {boolean} showModal - Whether to show a separate token awarded modal (default: true)
+   * @returns {Promise<number>} - Number of tokens awarded
+   */
+  const awardHederaTokens = async (pointsEarned, currentLevel, showModal = true) => {
+    if (!hederaEnabled || !hederaService) {
+      console.log('Hedera Token Service not enabled, skipping token award');
+      return 0;
+    }
+
+    try {
+      // Get user's Hedera account ID from connected wallet or user profile
+      const userHederaAccountId = walletAccountId || user?.hedera_account_id;
+      
+      if (!userHederaAccountId) {
+        console.warn('⚠️ User Hedera account ID not found. Please connect your HashPack wallet to receive tokens.');
+        // Show a toast notification to connect wallet
+        setToastType('walletConnect');
+        setToastMessage('Connect Wallet');
+        setToastMessage2('Connect your HashPack wallet to receive Hedera tokens as rewards!');
+        setToastCta('Connect');
+        setToastVisible(true);
+        return 0;
+      }
+
+      // Convert game points to token amount
+      // Award 1 token per valid word completed (regardless of word length)
+      // Points per word: 3-letter=100, 4-letter=150, 5-letter=200, 6-letter=250, 7-letter=300
+      // Count words by checking point ranges and award 1 token per word
+      
+      let tokenAmount = 0;
+      let remainingPoints = pointsEarned;
+      
+      // Count valid words and award 1 token per word
+      // Process from highest to lowest to accurately count words
+      while (remainingPoints > 0) {
+        if (remainingPoints >= 300) {
+          // 7-letter word = 1 token
+          tokenAmount += 1;
+          remainingPoints -= 300;
+        } else if (remainingPoints >= 250) {
+          // 6-letter word = 1 token
+          tokenAmount += 1;
+          remainingPoints -= 250;
+        } else if (remainingPoints >= 200) {
+          // 5-letter word = 1 token
+          tokenAmount += 1;
+          remainingPoints -= 200;
+        } else if (remainingPoints >= 150) {
+          // 4-letter word = 1 token
+          tokenAmount += 1;
+          remainingPoints -= 150;
+        } else if (remainingPoints >= 100) {
+          // 3-letter word = 1 token
+          tokenAmount += 1;
+          remainingPoints -= 100;
+        } else {
+          // Less than 100 points, award 1 token for partial completion
+          tokenAmount += 1;
+          remainingPoints = 0;
+        }
+      }
+      
+      if (tokenAmount <= 0) {
+        console.log('No tokens to award (amount is 0)');
+        return 0;
+      }
+
+      console.log(`🎁 Awarding ${tokenAmount} Hedera tokens to account ${userHederaAccountId}`);
+
+      // Check if token is associated with user's account
+      const isAssociated = await hederaService.isTokenAssociated(userHederaAccountId);
+      
+      if (!isAssociated) {
+        console.warn('⚠️ Token not associated with user account. User needs to associate token first.');
+        // You might want to show a notification to the user
+        return 0;
+      }
+
+      // Transfer tokens to user
+      const result = await hederaService.transferTokens(
+        userHederaAccountId,
+        tokenAmount,
+        `Game reward: ${pointsEarned} points earned at level ${currentLevel}`
+      );
+
+      if (result.success) {
+        console.log('✅ Hedera tokens awarded successfully:', result);
+        
+        // Only show separate token modal if showModal is true
+        // When called from processRewards during level completion, showModal is false
+        // so the success modal will be updated with token info instead
+        if (showModal) {
+          // Show success notification with transaction details
+          const transactionId = result.transactionId || 'N/A';
+          const receiptStatus = result.receipt || 'SUCCESS';
+          const accountDisplay = userHederaAccountId 
+            ? `${userHederaAccountId.slice(0, 8)}...${userHederaAccountId.slice(-4)}`
+            : 'your wallet';
+          
+          // Set messages before showing toast
+          const tokenMessage = `You received ${tokenAmount} Hedera token${tokenAmount > 1 ? 's' : ''}!`;
+          const accountMessage = `Sent to: ${accountDisplay}`;
+          const txMessage = `Transaction ID: ${transactionId}`;
+          
+          // Show toast with all details
+          setToastType('tokenAwarded');
+          setToastMessage('Tokens Awarded!');
+          setToastMessage2(tokenMessage);
+          setToastMessage3(`${accountMessage} | ${txMessage}`);
+          setToastCta('Continue');
+          setToastVisible(true);
+        } else {
+          // Success modal is already showing, token info will be updated there
+          console.log('ℹ️ Success modal already showing - token info will be updated there');
+        }
+        
+        // Return the token amount that was successfully awarded
+        return tokenAmount;
+      } else {
+        console.warn('⚠️ Token transfer result:', result);
+        showToast('error', 'Token Transfer Failed', 'Failed to transfer tokens. Please try again later.', 'OK');
+        return 0;
+      }
+    } catch (error) {
+      console.error('❌ Error awarding Hedera tokens:', error);
+      // Don't throw - allow game to continue even if token award fails
+      return 0;
+    }
+  };
 
   // Helpers
   const formatTime = (seconds) => `${seconds < 10 ? '0' : ''}${seconds}`;
@@ -518,7 +775,18 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
       setLastHintTime(user.last_hint || null);
       setLastShuffleTime(user.last_shuffle || null);
     }
-  }, [user]);
+  }, [
+    user?.telegram_id,
+    user?.free_trials,
+    user?.purchased_trials,
+    user?.last_jumbo,
+    user?.highest_level,
+    user?.highest_score,
+    user?.hint_count,
+    user?.shuffle_count,
+    user?.last_hint,
+    user?.last_shuffle
+  ]);
 
   // Trial countdown timer
   useEffect(() => {
@@ -949,6 +1217,7 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
     
     // Calculate completion statistics
     const completedWords = wordResults.filter(result => result.isComplete).length;
+    const correctAndCompleteWords = wordResults.filter(result => result.isComplete && result.isCorrect).length;
     const totalWords = wordsToValidate.length;
     
     // Update session score
@@ -973,57 +1242,83 @@ export const GamePlayWordFormedPointAwarded = ({ className, ...props }) => {
       }
     }
     
-    // Update Q points
-    const TotalPoints = parseFloat(tmsPoints) + parseFloat(earnedPoints);
-    const newTotalPoints = TotalPoints.toFixed(2);
-    
-    try {
-      await updateUser(user?.telegram_id, { tms_points: newTotalPoints });
-      console.log("Database updated successfully with new tms_points:", newTotalPoints);
-    } catch (error) {
-      console.error("Error updating database:", error);
-    }
-    
     setValidatingWords(false);
     
     // Show appropriate toast based on performance
     // STRICT: ALL words must be completed AND correct to advance
-    const allWordsCorrect = correct === totalWords && completedWords === totalWords && totalWords > 0 && correct > 0;
+    // Check: correct count equals total words, AND all words are complete, AND all words are correct
+    const allWordsCorrect = correct === totalWords 
+      && completedWords === totalWords 
+      && correctAndCompleteWords === totalWords
+      && totalWords > 0 
+      && correct > 0;
     
     console.log("=== LEVEL COMPLETION CHECK ===");
     console.log(`All words correct? ${allWordsCorrect}`);
-    console.log(`Correct: ${correct}, Completed: ${completedWords}, Total: ${totalWords}`);
+    console.log(`Correct: ${correct}, Completed: ${completedWords}, Correct & Complete: ${correctAndCompleteWords}, Total: ${totalWords}`);
     console.log(`Condition breakdown:`);
     console.log(`  - correct === totalWords? ${correct === totalWords} (${correct} === ${totalWords})`);
     console.log(`  - completedWords === totalWords? ${completedWords === totalWords} (${completedWords} === ${totalWords})`);
+    console.log(`  - correctAndCompleteWords === totalWords? ${correctAndCompleteWords === totalWords} (${correctAndCompleteWords} === ${totalWords})`);
     console.log(`  - totalWords > 0? ${totalWords > 0}`);
     console.log(`  - correct > 0? ${correct > 0}`);
+    console.log(`Word results:`, wordResults.map(r => ({ word: r.expected, complete: r.isComplete, correct: r.isCorrect })));
     console.log("==============================");
     
+    // Show modal immediately for better UX
     if (allWordsCorrect) {
-      console.log("✅ Level complete - showing SUCCESS modal (ALLOWS advancement to next level)");
+      console.log("✅ Level complete - showing SUCCESS modal immediately (ALLOWS advancement to next level)");
+      
+      // Show modal immediately with initial message
       setToastType("success");
       setToastMessage(`Perfect! Level ${level} complete!`);
-      setToastMessage2(`+${earnedPoints} Q points (${newTotalPoints} total)`);
+      setToastMessage2(`+${earnedPoints} Q points (processing rewards...)`);
       setToastMessage3(`Highest Level: ${highestLevelRef.current} | Session Score: ${newSessionScore} | Best Score: ${highestScoreRef.current}`);
-      setShowWatchAds(false); // Ensure watch ads button is not shown
-      setToastCta('Continue'); // Set correct CTA
+      setShowWatchAds(false);
+      setToastCta('Continue');
+      setToastVisible(true);
+      
+      // Process rewards in background (non-blocking)
+      if (earnedPoints > 0) {
+        processRewards(earnedPoints, level, true).then((rewardResult) => {
+          if (rewardResult?.success) {
+            // Update modal with reward details
+            const rewardMessage = rewardResult.tokensAwarded > 0 
+              ? `+${earnedPoints} Q points & ${rewardResult.tokensAwarded} token${rewardResult.tokensAwarded > 1 ? 's' : ''}`
+              : `+${earnedPoints} Q points`;
+            setToastMessage2(`${rewardMessage} (${rewardResult.newTotalPoints} total)`);
+          }
+        }).catch((error) => {
+          console.error("Error processing rewards:", error);
+        });
+      }
     } else {
       console.log("⚠️ Level NOT complete - showing CONTINUE OPTIONS modal (BLOCKS advancement)");
       console.log(`  Player can only: (1) Watch ads for 30 more seconds, (2) Pay gems for 30 more seconds, or (3) Restart game`);
       console.log(`  Player CANNOT advance to next level unless they complete all ${totalWords} words correctly`);
+      
+      // Still update Q points for partial completion (but no tokens)
+      if (earnedPoints > 0) {
+        const TotalPoints = parseFloat(tmsPoints) + parseFloat(earnedPoints);
+        const newTotalPoints = TotalPoints.toFixed(2);
+        try {
+          await updateUser(user?.telegram_id, { tms_points: newTotalPoints });
+          console.log("Partial points updated (level not completed):", newTotalPoints);
+        } catch (error) {
+          console.error("Error updating partial points:", error);
+        }
+      }
       
       // Show continue options - player did NOT complete level
       setToastType("continueOptions");
       setToastMessage("Time's up! Choose to continue:");
       setToastMessage2(`Score: ${correct}/${totalWords} completed words correct`);
       setToastMessage3(`Highest Level: ${highestLevelRef.current} | Session Score: ${newSessionScore} | Best Score: ${highestScoreRef.current}`);
-      setShowWatchAds(false); // Ensure watch ads button is not shown
+      setShowWatchAds(false);
       // Reset ad count for this level attempt
       localStorage.setItem('adCount', '0');
+      setToastVisible(true);
     }
-    
-    setToastVisible(true);
     isSubmittingRef.current = false; // Reset flag after validation
   };
 
@@ -1719,6 +2014,7 @@ const handleGameOver = () => {
       
       // Calculate statistics for reporting
       const completedWords = wordResults.filter(result => result.isComplete).length;
+      const correctAndCompleteWords = wordResults.filter(result => result.isComplete && result.isCorrect).length;
       const totalWords = currentLevelWords.length;
       
       // Update session score
@@ -1743,59 +2039,81 @@ const handleGameOver = () => {
         }
       }
       
-      // Update total Q points
-      const TotalPoints = parseFloat(tmsPoints) + parseFloat(earnedPoints);
-      const newTotalPoints = TotalPoints.toFixed(2);
-      
-      console.log(`Updating Q points: ${tmsPoints} + ${earnedPoints} = ${newTotalPoints}`);
-      
-      // Update Q points in the database
-      try {
-        await updateUser(user?.telegram_id, { tms_points: newTotalPoints });
-        console.log("Database updated successfully with new tms_points:", newTotalPoints);
-      } catch (error) {
-        console.error("Failed to update user points:", error);
-      }
-      
       // Show appropriate toast based on performance
       // STRICT: ALL words must be completed AND correct to advance
-      const allWordsCorrect = correct === totalWords && completedWords === totalWords && totalWords > 0 && correct > 0;
+      // Check: correct count equals total words, AND all words are complete, AND all words are correct
+      const allWordsCorrect = correct === totalWords 
+        && completedWords === totalWords 
+        && correctAndCompleteWords === totalWords
+        && totalWords > 0 
+        && correct > 0;
       
       console.log("=== LEVEL COMPLETION CHECK (SUBMIT) ===");
       console.log(`All words correct? ${allWordsCorrect}`);
-      console.log(`Correct: ${correct}, Completed: ${completedWords}, Total: ${totalWords}`);
+      console.log(`Correct: ${correct}, Completed: ${completedWords}, Correct & Complete: ${correctAndCompleteWords}, Total: ${totalWords}`);
       console.log(`Condition breakdown:`);
       console.log(`  - correct === totalWords? ${correct === totalWords} (${correct} === ${totalWords})`);
       console.log(`  - completedWords === totalWords? ${completedWords === totalWords} (${completedWords} === ${totalWords})`);
+      console.log(`  - correctAndCompleteWords === totalWords? ${correctAndCompleteWords === totalWords} (${correctAndCompleteWords} === ${totalWords})`);
       console.log(`  - totalWords > 0? ${totalWords > 0}`);
       console.log(`  - correct > 0? ${correct > 0}`);
-      console.log('Word validation results:', wordResults);
+      console.log(`Word results:`, wordResults.map(r => ({ word: r.expected, complete: r.isComplete, correct: r.isCorrect })));
       console.log("=======================================");
       
+      // Show modal immediately for better UX
       if (allWordsCorrect) {
-        console.log("✅ Level complete - showing SUCCESS modal (ALLOWS advancement to next level)");
+        console.log("✅ Level complete - showing SUCCESS modal immediately (ALLOWS advancement to next level)");
+        
+        // Show modal immediately with initial message
         setToastType("success");
         setToastMessage(`Perfect! Level ${level} complete!`);
-        setToastMessage2(`+${earnedPoints} Q points (${newTotalPoints} total)`);
+        setToastMessage2(`+${earnedPoints} Q points (processing rewards...)`);
         setToastMessage3(`Highest Level: ${highestLevelRef.current} | Session Score: ${newSessionScore} | Best Score: ${highestScoreRef.current}`);
-        setShowWatchAds(false); // Ensure watch ads button is not shown
-        setToastCta('Continue'); // Set correct CTA
+        setShowWatchAds(false);
+        setToastCta('Continue');
+        setToastVisible(true);
+        
+        // Process rewards in background (non-blocking)
+        if (earnedPoints > 0) {
+          processRewards(earnedPoints, level, true).then((rewardResult) => {
+            if (rewardResult?.success) {
+              // Update modal with reward details
+              const rewardMessage = rewardResult.tokensAwarded > 0 
+                ? `+${earnedPoints} Q points & ${rewardResult.tokensAwarded} token${rewardResult.tokensAwarded > 1 ? 's' : ''}`
+                : `+${earnedPoints} Q points`;
+              setToastMessage2(`${rewardMessage} (${rewardResult.newTotalPoints} total)`);
+            }
+          }).catch((error) => {
+            console.error("Error processing rewards:", error);
+          });
+        }
       } else {
         console.log("⚠️ Level NOT complete - showing CONTINUE OPTIONS modal (BLOCKS advancement)");
         console.log(`  Player can only: (1) Watch ads for 30 more seconds, (2) Pay gems for 30 more seconds, or (3) Restart game`);
         console.log(`  Player CANNOT advance to next level unless they complete all ${totalWords} words correctly`);
+        
+        // Still update Q points for partial completion (but no tokens)
+        if (earnedPoints > 0) {
+          const TotalPoints = parseFloat(tmsPoints) + parseFloat(earnedPoints);
+          const newTotalPoints = TotalPoints.toFixed(2);
+          try {
+            await updateUser(user?.telegram_id, { tms_points: newTotalPoints });
+            console.log("Partial points updated (level not completed):", newTotalPoints);
+          } catch (error) {
+            console.error("Error updating partial points:", error);
+          }
+        }
         
         // Show continue options for incomplete levels - DO NOT ADVANCE
         setToastType("continueOptions");
         setToastMessage("You didn't complete the level. Choose to continue:");
         setToastMessage2(`Score: ${correct}/${totalWords} completed words correct`);
         setToastMessage3(`Highest Level: ${highestLevelRef.current} | Session Score: ${newSessionScore} | Best Score: ${highestScoreRef.current}`);
-        setShowWatchAds(false); // Ensure watch ads button is not shown
+        setShowWatchAds(false);
         // Reset ad count for this level attempt
         localStorage.setItem('adCount', '0');
+        setToastVisible(true);
       }
-      
-      setToastVisible(true);
     } catch (e) {
       console.error(e);
     } finally {
@@ -1807,7 +2125,12 @@ const handleGameOver = () => {
 
   const nextLevel = () => {
     console.log("🎯 nextLevel() called - Advancing to next level!");
-    console.log("✅ User completed level successfully - advancing to next level");
+    
+    // Get current level value (use state directly to ensure we have the latest)
+    const currentLevelValue = level;
+    const newLevel = currentLevelValue + 1;
+    
+    console.log(`✅ User completed level ${currentLevelValue} successfully - advancing to level ${newLevel}`);
     
     // Reset ad count when advancing to next level
     localStorage.setItem('adCount', '0');
@@ -1828,38 +2151,40 @@ const handleGameOver = () => {
     // Close modal
     setToastVisible(false);
     
-    // Wait for modal to close, then proceed with level advancement
-    setTimeout(() => {
-    timerStartedRef.current = false;
-    
-    // Increment level
-    const newLevel = level + 1;
+    // Update level state immediately
     setLevel(newLevel);
+    console.log(`  Level updated: ${currentLevelValue} → ${newLevel}`);
     
     // Update highest level if needed
     if (newLevel > highestLevelRef.current) {
       highestLevelRef.current = newLevel;
       setHighestLevel(newLevel);
+      console.log(`  New highest level: ${newLevel}`);
       
       // Save the new highest level to database
-      try {
-        updateUser(user?.telegram_id, { highest_level: newLevel });
-        console.log("Updated highest level in database:", newLevel);
-      } catch (error) {
-        console.error("Failed to update highest level:", error);
-      }
+      updateUser(user?.telegram_id, { highest_level: newLevel })
+        .then(() => {
+          console.log("✅ Updated highest level in database:", newLevel);
+        })
+        .catch((error) => {
+          console.error("❌ Failed to update highest level:", error);
+        });
     }
     
-    setIsLoading(true);
-    
-    // Clear selections
-    setSelectedLetterIndex(null);
-    setSelectedGridIndex(null);
-    
-      // Setup next level with updated state
+    // Wait for modal to close, then proceed with level setup
     setTimeout(() => {
+      timerStartedRef.current = false;
+      setIsLoading(true);
+      
+      // Clear selections
+      setSelectedLetterIndex(null);
+      setSelectedGridIndex(null);
+      
+      // Setup next level with the new level value
+      setTimeout(() => {
+        console.log(`  Setting up level ${newLevel}...`);
         setupGame(newLevel);
-    setIsLoading(false);
+        setIsLoading(false);
         isSubmittingRef.current = false; // Reset flag after level setup
       }, 100);
     }, 50);
@@ -1882,12 +2207,26 @@ const handleGameOver = () => {
     showToast('hintUsed', 'Hint used!', 'Use hints wisely to solve puzzles', 'Continue');
   };
 
+  // Memoize the onConnect callback to prevent infinite loops
+  // Note: Account ID is already saved to DB in useWalletConnect hook
+  const handleWalletConnect = useCallback((accountId) => {
+    console.log('WalletConnect connected:', accountId);
+    // Account ID is automatically saved to DB by useWalletConnect hook
+    // No need to save here to avoid duplicate saves
+  }, []);
+
   return (
     <div className={"game-play-word-formed-point-awarded " + className}>
       {/* Topmost White Container */}
       <div className="topmost-white-container">
         {/* Close Button Section */}
-        <div className="close-button-section">
+        <div className="close-button-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {hederaEnabled && (
+            <WalletConnectButton 
+              onConnect={handleWalletConnect}
+              className="flex-shrink-0"
+            />
+          )}
           <button className="close-button" onClick={() => navigate('/Game')}>
             <img src="/assets/x-black.png" alt="Close" width={20} height={20} />
           </button>
@@ -3937,6 +4276,13 @@ const handleGameOver = () => {
         onPurchaseHint={purchaseHint}
         onPurchaseShuffle={purchaseShuffle}
         onWatchAdForGems={watchAdForGems}
+        onConnectWallet={async () => {
+          if (toastType === 'walletConnect' || toastCta === 'Connect') {
+            closeToast();
+            // Show instructions for QR code scanning
+            showToast('info', 'Connect Wallet', 'Open your Hedera wallet app and scan the QR code, or use the "Connect Wallet" button in the header.', 'OK');
+          }
+        }}
       />
     </div>
   );

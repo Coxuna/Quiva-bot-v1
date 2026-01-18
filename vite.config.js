@@ -24,6 +24,40 @@ export default defineConfig(({ mode }) => {
       alias: {
         buffer: 'buffer',
       },
-    }
+    },
+    optimizeDeps: {
+      include: [
+        '@reown/appkit',
+        '@reown/appkit-common',
+        '@reown/appkit-universal-connector',
+        '@hashgraph/sdk',
+        'ethers',
+      ],
+    },
+    // Suppress sourcemap warnings for node_modules
+    customLogger: {
+      warn: (msg) => {
+        // Filter out sourcemap warnings
+        if (typeof msg === 'string' && msg.includes('Sourcemap for') && msg.includes('points to missing source files')) {
+          return;
+        }
+        console.warn(msg);
+      },
+      warnOnce: (msg) => {
+        // Filter out sourcemap warnings
+        if (typeof msg === 'string' && msg.includes('Sourcemap for') && msg.includes('points to missing source files')) {
+          return;
+        }
+        console.warn(msg);
+      },
+      info: (msg, options) => {
+        console.info(msg, options || '');
+      },
+      error: (msg, options) => {
+        console.error(msg, options || '');
+      },
+      clearScreen: () => {},
+      hasErrorLogged: () => false,
+    },
   }
 })

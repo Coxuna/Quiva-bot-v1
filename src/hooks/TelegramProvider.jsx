@@ -136,12 +136,12 @@ export function TelegramProvider({ children }) {
     const randomNum = Math.floor(100 + Math.random() * 900); // Generates a 3-digit random number (100-999)
     return `REF-${randomNum}`;
 };
-  // Log updated user data when it changes
+  // Log updated user data when it changes (only log user ID to reduce spam)
   useEffect(() => {
-    if (user) {
-      console.log("Updated User Data:", user);
+    if (user?.id) {
+      console.log("Updated User Data:", { id: user.id, telegram_id: user.telegram_id });
     }
-  }, [user]);
+  }, [user?.id, user?.telegram_id]);
 
   const value = {
     initData,

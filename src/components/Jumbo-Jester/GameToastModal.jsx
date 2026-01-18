@@ -17,7 +17,8 @@ const GameToastModal = ({
   onRestartGame,
   onPurchaseHint,
   onPurchaseShuffle,
-  onWatchAdForGems
+  onWatchAdForGems,
+  onConnectWallet
 }) => {
   const closeModal = () => {
     onClose();
@@ -93,6 +94,12 @@ const GameToastModal = ({
                         <h2 className="text-xl text-white font-bold italic" style={{ fontFamily: 'Adventure, sans-serif' }}>{message}</h2>
                         <span className="text-2xl ml-2">🎉</span>
                       </>
+                    ) : toastType === 'tokenAwarded' ? (
+                      <>
+                        <span className="text-2xl mr-2">🎁</span>
+                        <h2 className="text-xl text-white font-bold italic" style={{ fontFamily: 'Adventure, sans-serif' }}>{message}</h2>
+                        <span className="text-2xl ml-2">🎁</span>
+                      </>
                     ) : (
                       <h2 className="text-xl text-white font-bold italic" style={{ fontFamily: 'Adventure, sans-serif' }}>{message}</h2>
                     )}
@@ -111,11 +118,15 @@ const GameToastModal = ({
           )}
           
                   {/* Secondary message */}
-                  <span className="text-white mb-4" style={{ fontFamily: 'Poppins, sans-serif' }}>{message2}</span>
+                  {message2 && (
+                    <span className="text-white mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>{message2}</span>
+                  )}
                   
-                  {/* Tertiary message for scores */}
+                  {/* Tertiary message for scores or transaction details */}
                   {message3 && (
-                    <span className="text-yellow-300 mb-4 text-sm font-semibold" style={{ fontFamily: 'Poppins, sans-serif' }}>{message3}</span>
+                    <span className={`mb-4 text-sm font-semibold ${toastType === 'tokenAwarded' ? 'text-green-300' : 'text-yellow-300'}`} style={{ fontFamily: 'Poppins, sans-serif', wordBreak: 'break-all' }}>
+                      {message3}
+                    </span>
                   )}
 
           {/* Image after text for watch ads and other modals */}
@@ -169,6 +180,21 @@ const GameToastModal = ({
             >
               <span style={{ fontFamily: 'Adventure, sans-serif' }}>Watch Ads to Get 10 Gems</span>
             </button>
+          ) : toastType === 'walletConnect' || (cta === 'Connect' && onConnectWallet) ? (
+            <div className="flex justify-between gap-3 w-full max-w-xs mx-auto">
+              <button 
+                onClick={closeModal}
+                className="bg-red-600 h-12 px-8 text-white font-bold shadow-[2px_10px_0px_0px_black] flex items-center justify-center gap-2 flex-1 hover:bg-red-700 transition-colors"
+              >
+                <span style={{ fontFamily: 'Adventure, sans-serif' }}>Cancel</span>
+              </button>
+              <button 
+                onClick={onConnectWallet || closeModal}
+                className="bg-blue-600 h-12 px-8 text-white font-bold shadow-[2px_10px_0px_0px_black] flex items-center justify-center gap-2 flex-1 hover:bg-blue-700 transition-colors"
+              >
+                <span style={{ fontFamily: 'Adventure, sans-serif' }}>Connect</span>
+              </button>
+            </div>
           ) : watchAds ? (
             <button 
              onClick={watchAdFunction}
